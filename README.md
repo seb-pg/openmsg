@@ -113,5 +113,5 @@ SBE xml files): it is only the low-level layer.
 
 ## Notes
 
-The library is provided "as is". While the author is happy to reasonable
+The library is provided "as is". While the author is happy to provide reasonable
 assistance, there is no guarantee any assistance will be provided.
