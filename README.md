@@ -18,7 +18,11 @@ work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 ## Open messaging library
 
 *openmsg* is a generic C++20 library making binary messages (protocols)
-decoding and encoding easier.
+decoding and encoding easier. An example of use would be the decoding of
+IP stack protocols, communication protocols based on SBE (simple binary
+encoding), etc.  While easy to write, no specification processing tool
+is provided (such as processing SBE specifications to generate lightweight
+messages) as I wanted to keep this utility simple and "focused".
 
 *openmsg* provides low-level wrappers to deal with endianess and other
 things like "optionull" values.
