@@ -20,9 +20,7 @@ work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 *openmsg* is a generic C++20 library making binary messages (protocols)
 decoding and encoding easier. An example of use would be the decoding of
 IP stack protocols, communication protocols based on SBE (simple binary
-encoding), etc.  While easy to write, no specification processing tool
-is provided (such as processing SBE specifications to generate lightweight
-messages) as I wanted to keep this utility simple and "focused".
+encoding), etc.
 
 *openmsg* provides low-level wrappers to deal with endianess and other
 things like "optionull" values.
@@ -49,9 +47,12 @@ Some memory_wrapper are provided in include/openmsg/memory_wrapper.h, such as
 * memory_wrapper_bswap (default)
 * memory_wrapper_movbe
 * memory_wrapper_robust
+Other schemes would be easy to add, such as "read 2 words, rotate, and mask"
+for processing units (CPU/DSP/GPU) not supporting non-aligned memory accesses.
 
 *openmsg* does not provide a parser for messages specifications (such as
-SBE xml files): it is only the low-level layer.
+Simple Binary Encoding XML  files). While easy to write such generator, this
+library focused on the low-level layer.
 
 ----
 
