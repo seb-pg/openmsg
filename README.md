@@ -143,6 +143,5 @@ Second, build the project
     cmake --build build/Release
 
 Third, simply run
-    ./build/Release/bin/uphold
+    ./build/Release/bin/example
 
-Running all the unit tests is recommended: ./build/Release/bin/uphold test

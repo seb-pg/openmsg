@@ -75,6 +75,12 @@ struct EndianWrapper : detail::EndianWrapperBase<_T>
         return operator()();
     }
 
+    // access to storage_value (should only be used for testing)
+    constexpr const storage_type& storage_value() const noexcept
+    {
+        return value;
+    }
+
 private:
     storage_type value;
 };

@@ -82,7 +82,7 @@ struct memory_wrapper_robust
         auto values = reinterpret_cast<const bytes_t&>(y);
         dst = static_cast<_U>(values[mask ^ 0]);
         if constexpr (sizeof(_U) >= 2)
-            dst |= static_cast<_U>(values[mask ^ 1]) << 8ul;
+            dst = static_cast<_U>(dst | (static_cast<_U>(values[mask ^ 1]) << 8u));  // weird line to avoid: conversion from ‘int’ to ... {aka ‘short unsigned int’} may change value [-Warith-conversion]
         if constexpr (sizeof(_U) >= 4)
             dst |= static_cast<_U>(values[mask ^ 2]) << 16ul |
             static_cast<_U>(values[mask ^ 3]) << 24ul;

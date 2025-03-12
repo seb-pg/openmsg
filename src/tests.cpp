@@ -16,9 +16,11 @@
 #include "inttypes.h"
 
 #include <cassert>
+#include <format>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
+#include <source_location>
 #include <string.h>
 #include <vector>
 
@@ -36,7 +38,13 @@ constexpr uint64_t r8 = 0xf7e6d5c4b3a29180;
 
 }  // namespace constants
 
-#define dynamic_assert(value) assert((value))
+void __dynamic_assert(bool value, std::source_location loc)
+{
+    if (!bool(value))
+        throw std::runtime_error(std::format("error in {} at line {}", loc.file_name(),  loc.line()));
+}
+
+#define dynamic_assert(value) __dynamic_assert((value), std::source_location::current())
 
 void test_array_char()
 {
@@ -202,7 +210,7 @@ void _test_endian_wrapper2(_Args&&... args)
     //std::cout << ", " << typeid(value_type).name() << " -> " << typeid(storage_type).name();
     //std::cout << ")" << std::endl;
 
-    constexpr char unset_value = 0xCCu;
+    constexpr char unset_value = static_cast<char>(0xCCu);
 
     // the following should always compile, and was added to replace because the constexpr-ness is lost in args
     if constexpr (sizeof...(_Args) == 0)
@@ -222,7 +230,7 @@ void _test_endian_wrapper2(_Args&&... args)
     static_assert(std::is_same_v<decltype(casted_host_value), decltype(host_value)>);
     dynamic_assert(casted_host_value == host_value);
 
-    auto stored_value = *reinterpret_cast<const storage_type*>(&obj);
+    auto stored_value = obj.storage_value();
     static_assert(sizeof(obj) == sizeof(host_value));
     static_assert(sizeof(obj) == sizeof(stored_value));
     static_assert(std::is_same_v<value_type, decltype(host_value)>);
