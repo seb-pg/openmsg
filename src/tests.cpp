@@ -7,11 +7,11 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
-#include "openmsg/bswap.h"
-#include "openmsg/array_char.h"
-#include "openmsg/endian_wrapper.h"
-#include "openmsg/memory_wrapper.h"
-#include "openmsg/optionull.h"
+#include "openmsg/bswap.hpp"
+#include "openmsg/array_char.hpp"
+#include "openmsg/endian_wrapper.hpp"
+#include "openmsg/memory_wrapper.hpp"
+#include "openmsg/optionull.hpp"
 
 #include "inttypes.h"
 
@@ -324,3 +324,10 @@ void tests()
 }
 
 }  // namespace openmsg
+
+int main(int argc, char* argv[])
+{
+    (void)argc;
+    (void)argv;
+    openmsg::tests();
+}

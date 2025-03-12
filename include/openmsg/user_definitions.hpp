@@ -8,10 +8,14 @@
 // work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 #pragma once
-#include <type_traits>
-#if (__cplusplus >= 202002L) || defined(_HAS_CXX20)
 
-#include "openmsg/memory_wrapper.h"
+#if (__cplusplus < 202002L) && !defined(_HAS_CXX20)
+#error C++20 or more is needed
+#endif
+
+#include "openmsg/memory_wrapper.hpp"
+
+#include <type_traits>
 
 namespace openmsg {
 
@@ -22,5 +26,3 @@ template<typename _H, typename _M, typename _E>
 using endian_wrapper_user = memory_wrapper_bswap<_H, _M, _E>;
 
 }  // namespace openmsg
-
-#endif

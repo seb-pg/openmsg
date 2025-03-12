@@ -8,12 +8,16 @@
 // work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 #pragma once
-#include <type_traits>
-#if (__cplusplus >= 202002L) || defined(_HAS_CXX20)
 
-#include "openmsg/optionull.h"
-#include "openmsg/memory_wrapper.h"
-#include "openmsg/user_definitions.h"
+#if (__cplusplus < 202002L) && !defined(_HAS_CXX20)
+#error C++20 or more is needed
+#endif
+
+#include "openmsg/optionull.hpp"
+#include "openmsg/memory_wrapper.hpp"
+#include "openmsg/user_definitions.hpp"
+
+#include <type_traits>
 
 namespace openmsg {
 
@@ -106,5 +110,3 @@ using be_float_t = BigEndian<float>;
 using be_double_t = BigEndian<double>;
 
 }  // namespace openmsg
-
-#endif

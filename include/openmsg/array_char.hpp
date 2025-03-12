@@ -8,17 +8,21 @@
 // work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 #pragma once
-#include <type_traits>
-#if (__cplusplus >= 202002L) || defined(_HAS_CXX20)
 
-#include "openmsg/memory_wrapper.h"
-#include "openmsg/user_definitions.h"
+#if (__cplusplus < 202002L) && !defined(_HAS_CXX20)
+#error C++20 or more is needed
+#endif
 
+#include "openmsg/memory_wrapper.hpp"
+#include "openmsg/user_definitions.hpp"
+
+#include <algorithm>
 #include <array>
 #include <compare>
 #include <limits>
 #include <string>
 #include <string_view>
+#include <type_traits>
 
 namespace openmsg {
 
@@ -201,5 +205,3 @@ template<size_t _N, bool _is_zero_terminated = false>
 using ArrayChar8 = ArrayCharacter<char8_t, _N, _is_zero_terminated>;
 
 }  // namespace openmsg
-
-#endif

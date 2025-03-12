@@ -8,11 +8,14 @@
 // work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 #pragma once
-#include <type_traits>
-#if (__cplusplus >= 202002L) || defined(_HAS_CXX20)
+
+#if (__cplusplus < 202002L) && !defined(_HAS_CXX20)
+#error C++20 or more is needed
+#endif
 
 #include <concepts>
 #include <limits>
+#include <type_traits>
 
 namespace openmsg {
 
@@ -63,5 +66,3 @@ concept optionullable = requires(_T x)
 };
 
 }  // namespace openmsg
-
-#endif

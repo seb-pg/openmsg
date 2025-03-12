@@ -8,12 +8,15 @@
 // work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 #pragma once
-#include <type_traits>
-#if (__cplusplus >= 202002L) || defined(_HAS_CXX20)
+
+#if (__cplusplus < 202002L) && !defined(_HAS_CXX20)
+#error C++20 or more is needed
+#endif
 
 #include <inttypes.h>
 #include <bit>
 #include <concepts>
+#include <type_traits>
 
 #if defined(__GNUC__) || defined(__clang__)
 #include <byteswap.h>
@@ -68,5 +71,3 @@ constexpr _T bswap(_T x) noexcept
 }
 
 }  // namespace openmsg
-
-#endif

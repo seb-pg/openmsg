@@ -8,14 +8,17 @@
 // work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 #pragma once
-#include <type_traits>
-#if (__cplusplus >= 202002L) || defined(_HAS_CXX20)
 
-#include "openmsg/bswap.h"
+#if (__cplusplus < 202002L) && !defined(_HAS_CXX20)
+#error C++20 or more is needed
+#endif
+
+#include "openmsg/bswap.hpp"
 
 #include <inttypes.h>
 #include <bit>
 #include <concepts>
+#include <type_traits>
 
 #if defined(__GNUC__) || defined(__clang__)
 #include <byteswap.h>
@@ -123,7 +126,7 @@ struct memory_wrapper_robust
 template<typename _H, typename _M, typename _E>
 struct memory_wrapper_movbe
 {
-    // for Intel CPU of 4th generation Intel® Core™ processor family (codenamed Haswell)
+    // for Intel CPU of 4th generation Intel Core processor family (codenamed Haswell)
     constexpr static auto endian = _E::value;
     using _U = as_uint_type_t<_H>;
 
@@ -171,5 +174,3 @@ struct memory_wrapper_movbe
 };
 
 }  // namespace openmsg
-
-#endif
