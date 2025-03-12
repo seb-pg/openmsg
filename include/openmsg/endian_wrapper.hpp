@@ -21,39 +21,39 @@
 
 namespace openmsg {
 
-template<typename _T>
-concept endian_wrappable = serialisable<_T> || optionullable<_T>;
+template<typename T>
+concept endian_wrappable = serialisable<T> || optionullable<T>;
 
 namespace detail {
 
-template<endian_wrappable _T, bool = optionullable<_T>>
+template<endian_wrappable T, bool = optionullable<T>>
 struct EndianWrapperBase
 {
-    using value_type = typename _T::value_type;
-    constexpr static value_type nullValue = _T::nullValue;
+    using value_type = typename T::value_type;
+    constexpr static value_type nullValue = T::nullValue;
 };
 
-template<serialisable _T>
-struct EndianWrapperBase<_T, false>
+template<serialisable T>
+struct EndianWrapperBase<T, false>
 {
-    using value_type = _T;
+    using value_type = T;
 };
 
 }  // namespace detail
 
 #pragma pack(push, 1)
 
-template<endian_wrappable _T, template<typename...> class _memory_wrapper, std::endian _endian>
-struct EndianWrapper : detail::EndianWrapperBase<_T>
+template<endian_wrappable T, template<typename...> class MemoryWrapper, std::endian Endian>
+struct EndianWrapper : detail::EndianWrapperBase<T>
 {
-    using value_type = typename detail::EndianWrapperBase<_T>::value_type;
-    using storage_type = std::conditional_t<_endian == std::endian::native, value_type, as_uint_type_t<value_type>>;
-    using memory_wrapper = _memory_wrapper<value_type, storage_type, std::integral_constant<std::endian, _endian>>;
+    using value_type = typename detail::EndianWrapperBase<T>::value_type;
+    using storage_type = std::conditional_t<Endian == std::endian::native, value_type, as_uint_type_t<value_type>>;
+    using memory_wrapper = MemoryWrapper<value_type, storage_type, std::integral_constant<std::endian, Endian>>;
 
     constexpr EndianWrapper() noexcept
     {
-        if constexpr (optionullable<_T>)
-            value = memory_wrapper::htom(_T::nullValue);
+        if constexpr (optionullable<T>)
+            value = memory_wrapper::htom(T::nullValue);
         else if (std::is_constant_evaluated())
             value = {};
     }
@@ -87,11 +87,11 @@ private:
 
 #pragma pack(pop)
 
-template<endian_wrappable _T>
-using BigEndian    = EndianWrapper<_T, endian_wrapper_user, std::endian::big>;
+template<endian_wrappable T>
+using BigEndian    = EndianWrapper<T, endian_wrapper_user, std::endian::big>;
 
-template<endian_wrappable _T>
-using LittleEndian = EndianWrapper<_T, endian_wrapper_user, std::endian::little>;
+template<endian_wrappable T>
+using LittleEndian = EndianWrapper<T, endian_wrapper_user, std::endian::little>;
 
 using le_int8_t = LittleEndian<uint8_t>;
 using le_uint8_t = LittleEndian<uint8_t>;

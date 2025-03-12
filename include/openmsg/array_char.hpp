@@ -30,31 +30,31 @@ namespace openmsg {
 
 namespace detail_constexpr {
 
-template<typename _T, size_t _N>
-constexpr size_t array_len(const _T(&src)[_N])
+template<typename T, size_t N>
+constexpr size_t array_len(const T(&src)[N])
 {
     size_t i;
-    for (i = 0; i < _N; ++i)
+    for (i = 0; i < N; ++i)
         if (src[i] == 0)
             break;
     return i;
 }
 
-template<typename _T, size_t _N, size_t _Ns>
-constexpr void array_copy(_T(&elems)[_N],  const _T(&src_elems)[_Ns], bool is_zero_terminated)
+template<typename T, size_t N, size_t Ns>
+constexpr void array_copy(T(&elems)[N],  const T(&src_elems)[Ns], bool is_zero_terminated)
 {
-    constexpr auto m = std::min(_N, _Ns);
+    constexpr auto m = std::min(N, Ns);
     std::copy_n(src_elems, m, elems);
-    if constexpr (m < _N)
-        std::fill_n(elems + m, _N - m, static_cast<_T>(0));
+    if constexpr (m < N)
+        std::fill_n(elems + m, N - m, static_cast<T>(0));
     if (is_zero_terminated)
-        elems[_N - 1] = 0;
+        elems[N - 1] = 0;
 }
 
-template<typename _T, size_t _N, size_t _Ns>
-constexpr std::strong_ordering array_strncmp(const _T(&elems)[_N], const _T(&src_elems)[_Ns])
+template<typename T, size_t N, size_t Ns>
+constexpr std::strong_ordering array_strncmp(const T(&elems)[N], const T(&src_elems)[Ns])
 {
-    constexpr auto m = std::min(_N, _Ns);
+    constexpr auto m = std::min(N, Ns);
     size_t i = 0;
     while (i < m)
     {
@@ -68,21 +68,21 @@ constexpr std::strong_ordering array_strncmp(const _T(&elems)[_N], const _T(&src
 
 }  // namespace detail_constexpr
 
-template <class _T, class... _Types>
-constexpr bool is_any_of = std::disjunction_v<std::is_same<_T, _Types>...>;
+template <class T, class... Types>
+constexpr bool is_any_of = std::disjunction_v<std::is_same<T, Types>...>;
 
-template<typename _T>
-concept characters = is_any_of<_T, char, char8_t>;
+template<typename T>
+concept characters = is_any_of<T, char, char8_t>;
 
-template<characters _T, size_t _N, bool _is_zero_terminated>
-requires (sizeof(_T) == 1)
+template<characters T, size_t N, bool IsZeroTerminated>
+requires (sizeof(T) == 1)
 struct ArrayCharacter
 {
 public:
 
-    constexpr static size_t size = _N;
-    constexpr static bool is_zero_terminated = _is_zero_terminated;
-    using value_type = _T;
+    constexpr static size_t size = N;
+    constexpr static bool is_zero_terminated = IsZeroTerminated;
+    using value_type = T;
 
     constexpr ArrayCharacter(const ArrayCharacter& src) noexcept = default;
     constexpr ArrayCharacter& operator=(const ArrayCharacter& src) noexcept = default;
@@ -98,29 +98,29 @@ public:
             elems[size - 1] = 0;
     }
 
-    template<size_t _Ns>
-    constexpr ArrayCharacter(const value_type(&src_elems)[_Ns]) noexcept
+    template<size_t Ns>
+    constexpr ArrayCharacter(const value_type(&src_elems)[Ns]) noexcept
     {
         detail_constexpr::array_copy(elems, src_elems, is_zero_terminated);
     }
 
-    template<size_t _Ns, bool _Zs>
-    constexpr ArrayCharacter(const ArrayCharacter<value_type, _Ns, _Zs>& src) noexcept
+    template<size_t Ns, bool Zs>
+    constexpr ArrayCharacter(const ArrayCharacter<value_type, Ns, Zs>& src) noexcept
     {
         detail_constexpr::array_copy(elems, src.elems, is_zero_terminated);
     }
 
     // operator=
 
-    template<size_t _Ns>
-    constexpr ArrayCharacter& operator=(const value_type(&src_elems)[_Ns]) noexcept
+    template<size_t Ns>
+    constexpr ArrayCharacter& operator=(const value_type(&src_elems)[Ns]) noexcept
     {
         detail_constexpr::array_copy(elems, src_elems, is_zero_terminated);
         return *this;
     }
 
-    template<size_t _Ns, bool _Zs>
-    constexpr ArrayCharacter& operator=(const ArrayCharacter<value_type, _Ns, _Zs>& src) noexcept
+    template<size_t Ns, bool Zs>
+    constexpr ArrayCharacter& operator=(const ArrayCharacter<value_type, Ns, Zs>& src) noexcept
     {
         detail_constexpr::array_copy(elems, src.elems, is_zero_terminated);
         return *this;
@@ -128,14 +128,14 @@ public:
 
     // operator<=>, operator==
 
-    template<size_t _Ns, bool izt>
-    constexpr std::strong_ordering operator<=>(const ArrayCharacter<value_type, _Ns, izt>& rhs) const noexcept
+    template<size_t Ns, bool IsZeroTerminatedS>
+    constexpr std::strong_ordering operator<=>(const ArrayCharacter<value_type, Ns, IsZeroTerminatedS>& rhs) const noexcept
     {
         return detail_constexpr::array_strncmp(elems, rhs.elems);
     }
 
-    template<size_t _Ns, bool izt>
-    constexpr bool operator==(const ArrayCharacter<value_type, _Ns, izt>& rhs) const noexcept
+    template<size_t Ns, bool IsZeroTerminatedS>
+    constexpr bool operator==(const ArrayCharacter<value_type, Ns, IsZeroTerminatedS>& rhs) const noexcept
     {
         return operator<=>(rhs) == std::strong_ordering::equal;
     }
@@ -198,10 +198,10 @@ public:
     value_type elems[size];
 };
 
-template<size_t _N, bool _is_zero_terminated = false>
-using ArrayChar = ArrayCharacter<char, _N, _is_zero_terminated>;
+template<size_t N, bool IsZeroTerminated = false>
+using ArrayChar = ArrayCharacter<char, N, IsZeroTerminated>;
 
-template<size_t _N, bool _is_zero_terminated = false>
-using ArrayChar8 = ArrayCharacter<char8_t, _N, _is_zero_terminated>;
+template<size_t N, bool IsZeroTerminated = false>
+using ArrayChar8 = ArrayCharacter<char8_t, N, IsZeroTerminated>;
 
 }  // namespace openmsg

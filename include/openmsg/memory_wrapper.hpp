@@ -32,51 +32,51 @@ namespace openmsg {
 // openmsg does not take side with regards to memory aliasing and
 // memory access reordering issues (either software or hardware)
 
-template<typename _T>
-requires (sizeof(_T) <= 8 && std::has_single_bit(sizeof(_T)))
-using as_uint_type_t =  std::conditional_t<sizeof(_T) == 8, uint64_t,
-                        std::conditional_t<sizeof(_T) == 4, uint32_t,
-                        std::conditional_t<sizeof(_T) == 2, uint16_t, uint8_t>>>;
+template<typename T>
+requires (sizeof(T) <= 8 && std::has_single_bit(sizeof(T)))
+using as_uint_type_t =  std::conditional_t<sizeof(T) == 8, uint64_t,
+                        std::conditional_t<sizeof(T) == 4, uint32_t,
+                        std::conditional_t<sizeof(T) == 2, uint16_t, uint8_t>>>;
 
-template<typename _H, typename _M, typename _E>
+template<typename H, typename M, typename Endian>
 struct memory_wrapper_bswap
 {
-    constexpr static auto endian = _E::value;
-    using _U = as_uint_type_t<_H>;
+    constexpr static auto endian = Endian::value;
+    using _U = as_uint_type_t<H>;
 
-    constexpr static _H mtoh(const _M& x) noexcept
+    constexpr static H mtoh(const M& x) noexcept
     {
         auto y = std::bit_cast<_U>(x);
         if constexpr (endian != std::endian::native)
             y = bswap(y);
-        return std::bit_cast<_H>(y);
+        return std::bit_cast<H>(y);
     }
 
-    constexpr static _M htom(const _H& x) noexcept
+    constexpr static M htom(const H& x) noexcept
     {
         auto y = std::bit_cast<_U>(x);
         if constexpr (endian != std::endian::native)
             y = bswap(y);
-        return std::bit_cast<_M>(y);
+        return std::bit_cast<M>(y);
     }
 };
 
-template<typename _H, typename _M, typename _E>
+template<typename H, typename M, typename Endian>
 struct memory_wrapper_robust
 {
-    constexpr static auto endian = _E::value;
-    using _U = as_uint_type_t<_H>;
+    constexpr static auto endian = Endian::value;
+    using _U = as_uint_type_t<H>;
 
-    using bytes_t = uint8_t[sizeof(_H)];
-    constexpr static int mask = endian == std::endian::native ? 0 : (sizeof(_H) - 1);
+    using bytes_t = uint8_t[sizeof(H)];
+    constexpr static int mask = endian == std::endian::native ? 0 : (sizeof(H) - 1);
 
-    constexpr static _H mtoh(const _M& x) noexcept
+    constexpr static H mtoh(const M& x) noexcept
     {
         if (std::is_constant_evaluated())
-            return memory_wrapper_bswap<_H, _M, _E>::mtoh(x);
+            return memory_wrapper_bswap<H, M, Endian>::mtoh(x);
         auto y = std::bit_cast<_U>(x);
-        if constexpr (sizeof(_M) == 1 || endian == std::endian::native)
-            return std::bit_cast<_H>(y);
+        if constexpr (sizeof(M) == 1 || endian == std::endian::native)
+            return std::bit_cast<H>(y);
         //
         _U dst;
         auto values = reinterpret_cast<const bytes_t&>(y);
@@ -91,18 +91,18 @@ struct memory_wrapper_robust
                    static_cast<_U>(values[mask ^ 5]) << 40ull |
                    static_cast<_U>(values[mask ^ 6]) << 48ull |
                    static_cast<_U>(values[mask ^ 7]) << 56ull;
-        return std::bit_cast<_H>(dst);
+        return std::bit_cast<H>(dst);
     };
 
-    constexpr static _M htom(const _H& x) noexcept
+    constexpr static M htom(const H& x) noexcept
     {
         if (std::is_constant_evaluated())
-            return memory_wrapper_bswap<_H, _M, _E>::htom(x);
+            return memory_wrapper_bswap<H, M, Endian>::htom(x);
         auto y = std::bit_cast<_U>(x);
-        if constexpr (sizeof(_M) == 1 || endian == std::endian::native)
-            return std::bit_cast<_M>(y);
+        if constexpr (sizeof(M) == 1 || endian == std::endian::native)
+            return std::bit_cast<M>(y);
         //
-        _M dst;
+        M dst;
         auto values = reinterpret_cast<bytes_t&>(dst);
         values[mask ^ 0] = static_cast<uint8_t>(y);
         if constexpr (sizeof(_U) >= 2)
@@ -123,52 +123,52 @@ struct memory_wrapper_robust
     };
 };
 
-template<typename _H, typename _M, typename _E>
+template<typename H, typename M, typename Endian>
 struct memory_wrapper_movbe
 {
     // for Intel CPU of 4th generation Intel Core processor family (codenamed Haswell)
-    constexpr static auto endian = _E::value;
-    using _U = as_uint_type_t<_H>;
+    constexpr static auto endian = Endian::value;
+    using _U = as_uint_type_t<H>;
 
-    constexpr static _H mtoh(const _M& x) noexcept
+    constexpr static H mtoh(const M& x) noexcept
     {
         if (std::is_constant_evaluated())
-            return memory_wrapper_bswap<_H, _M, _E>::mtoh(x);
+            return memory_wrapper_bswap<H, M, Endian>::mtoh(x);
         auto y = std::bit_cast<_U>(x);
-        if constexpr (sizeof(_M) == 1 || endian == std::endian::native)
-            return std::bit_cast<_H>(y);
+        if constexpr (sizeof(M) == 1 || endian == std::endian::native)
+            return std::bit_cast<H>(y);
         //
-#if defined(_MSC_VER)
-        if constexpr (sizeof(_M) == 2)
-            return std::bit_cast<_H>(_load_be_u16(&y));
-        if constexpr (sizeof(_M) == 4)
-            return std::bit_cast<_H>(_load_be_u32(&y));
-        if constexpr (sizeof(_M) == 8)
-            return std::bit_cast<_H>(_load_be_u64(&y));
+#if defined(MSC_VER)
+        if constexpr (sizeof(M) == 2)
+            return std::bit_cast<H>(_load_be_u16(&y));
+        if constexpr (sizeof(M) == 4)
+            return std::bit_cast<H>(_load_be_u32(&y));
+        if constexpr (sizeof(M) == 8)
+            return std::bit_cast<H>(_load_be_u64(&y));
 #else
-        return memory_wrapper_bswap<_H, _M, _E>::mtoh(x);
+        return memory_wrapper_bswap<H, M, Endian>::mtoh(x);
 #endif
     }
 
-    constexpr static _M htom(const _H& x) noexcept
+    constexpr static M htom(const H& x) noexcept
     {
         if (std::is_constant_evaluated())
-            return memory_wrapper_bswap<_H, _M, _E>::htom(x);
+            return memory_wrapper_bswap<H, M, Endian>::htom(x);
         auto y = std::bit_cast<_U>(x);
-        if constexpr (sizeof(_M) == 1 || endian == std::endian::native)
-            return std::bit_cast<_M>(y);
+        if constexpr (sizeof(M) == 1 || endian == std::endian::native)
+            return std::bit_cast<M>(y);
         //
 #if defined(_MSC_VER)
-        _M dst;
-        if constexpr (sizeof(_M) == 2)
+        M dst;
+        if constexpr (sizeof(M) == 2)
             _store_be_u16(&dst, y);
-        if constexpr (sizeof(_M) == 4)
+        if constexpr (sizeof(M) == 4)
             _store_be_u32(&dst, y);
-        if constexpr (sizeof(_M) == 8)
+        if constexpr (sizeof(M) == 8)
             _store_be_u64(&dst, y);
         return dst;
 #else
-        return memory_wrapper_bswap<_H, _M, _E>::htom(x);
+        return memory_wrapper_bswap<H, M, Endian>::htom(x);
 #endif
     }
 };

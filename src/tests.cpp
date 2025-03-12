@@ -137,18 +137,18 @@ void test_serialisable()
     static_assert(!serialisable<S>);
 }
 
-template<serialisable _T1, serialisable _T2>
+template<serialisable T1, serialisable T2>
 struct _TestOptionull1
 {
-    using value_type = _T1;
-    constexpr static _T2 nullValue = 0;  // "optionull" have "nullValue"
+    using value_type = T1;
+    constexpr static T2 nullValue = 0;  // "optionull" have "nullValue"
 };
 
-template<serialisable _T1, serialisable _T2>
+template<serialisable T1, serialisable T2>
 struct _TestOptionull2
 {
-    using value_type = _T1;
-    constexpr static _T2 null_value = 0;  // "optionull" NOT have "null_value", of the same type as _T1
+    using value_type = T1;
+    constexpr static T2 null_value = 0;  // "optionull" NOT have "null_value", of the same type as T1
 };
 
 void test_optionull()
@@ -189,24 +189,24 @@ void test_optionull()
 enum class E : uint16_t { e = constants::w2, nullValue = 65535 };
 struct B { uint32_t b1 : 3; uint32_t b2 : 2; int32_t b3 : 3; };
 
-template<template<typename...> class _memory_wrapper, std::endian _endian, typename _M, typename _H>
-void _test_memory_wrapper2(const _H& x)
+template<template<typename...> class MemoryWrapper, std::endian Endian, typename M, typename H>
+void _test_memory_wrapper2(const H& x)
 {
-    using memory_wrapper = _memory_wrapper<_H, _M, std::integral_constant<std::endian, _endian>>;
-    _M memory_value = memory_wrapper::htom(x);
+    using memory_wrapper = MemoryWrapper<H, M, std::integral_constant<std::endian, Endian>>;
+    M memory_value = memory_wrapper::htom(x);
     auto host_value = memory_wrapper::mtoh(memory_value);
     dynamic_assert(host_value == x);
 }
 
-template<template<typename...> class _memory_wrapper, std::endian _endian, typename _T, typename ... _Args>
+template<template<typename...> class MemoryWrapper, std::endian Endian, typename T, typename ... _Args>
 void _test_endian_wrapper2(_Args&&... args)
 {
-    using OurEndian = EndianWrapper<_T, _memory_wrapper, _endian>;
+    using OurEndian = EndianWrapper<T, MemoryWrapper, Endian>;
     using value_type = typename OurEndian::value_type;
     using storage_type = typename OurEndian::storage_type;
 
     //std::cout << typeid(OurEndian).name();
-    //std::cout << "(" << (_endian == std::endian::big ? "big" : "little") << " endian";
+    //std::cout << "(" << (Endian == std::endian::big ? "big" : "little") << " endian";
     //std::cout << ", " << typeid(value_type).name() << " -> " << typeid(storage_type).name();
     //std::cout << ")" << std::endl;
 
@@ -216,9 +216,9 @@ void _test_endian_wrapper2(_Args&&... args)
     if constexpr (sizeof...(_Args) == 0)
         constexpr OurEndian oe;
     else if constexpr (optionullable<OurEndian>)
-        constexpr OurEndian oe = _T::nullValue;
+        constexpr OurEndian oe = T::nullValue;
     else
-        constexpr OurEndian oe = static_cast<_T>(0);
+        constexpr OurEndian oe = static_cast<T>(0);
 
     std::vector<char> unset_buf(512, unset_value);
     std::vector<char> buf(512, unset_value);
@@ -239,7 +239,7 @@ void _test_endian_wrapper2(_Args&&... args)
     if constexpr (!optionullable<OurEndian> && sizeof...(_Args) == 0)
         dynamic_assert(buf == unset_buf);
 
-    if constexpr (_endian == std::endian::native)
+    if constexpr (Endian == std::endian::native)
         dynamic_assert(stored_value == std::bit_cast<storage_type>(host_value));
     else
     {
@@ -248,29 +248,29 @@ void _test_endian_wrapper2(_Args&&... args)
     }
 }
 
-template<template<typename...> class _memory_wrapper, std::endian _endian>
+template<template<typename...> class MemoryWrapper, std::endian Endian>
 void _test_endian_wrapper1()
 {
     // test if the memory wrapper behaves as intended
-    _test_memory_wrapper2<_memory_wrapper, _endian, uint64_t, double>(1.0);
-    _test_memory_wrapper2<_memory_wrapper, _endian, uint16_t, E>(E::e);
+    _test_memory_wrapper2<MemoryWrapper, Endian, uint64_t, double>(1.0);
+    _test_memory_wrapper2<MemoryWrapper, Endian, uint16_t, E>(E::e);
 
     // test endian wrapper on "direct" types
-    _test_endian_wrapper2<_memory_wrapper, _endian, uint32_t>();
-    _test_endian_wrapper2<_memory_wrapper, _endian, uint32_t>(constants::w4);
-    _test_endian_wrapper2<_memory_wrapper, _endian, E>();
-    _test_endian_wrapper2<_memory_wrapper, _endian, E>(E::e);
-    _test_endian_wrapper2<_memory_wrapper, _endian, double>();
-    _test_endian_wrapper2<_memory_wrapper, _endian, double>(1.0);
+    _test_endian_wrapper2<MemoryWrapper, Endian, uint32_t>();
+    _test_endian_wrapper2<MemoryWrapper, Endian, uint32_t>(constants::w4);
+    _test_endian_wrapper2<MemoryWrapper, Endian, E>();
+    _test_endian_wrapper2<MemoryWrapper, Endian, E>(E::e);
+    _test_endian_wrapper2<MemoryWrapper, Endian, double>();
+    _test_endian_wrapper2<MemoryWrapper, Endian, double>(1.0);
 
     // test endian wrapper on "Optionull" types (same as direct types, but wrapped)
-    _test_endian_wrapper2<_memory_wrapper, _endian, Optionull<uint32_t, ~1u>>();
-    _test_endian_wrapper2<_memory_wrapper, _endian, Optionull<uint32_t, ~1u>>(5u);
-    _test_endian_wrapper2<_memory_wrapper, _endian, Optionull<E, E::nullValue>>();
-    _test_endian_wrapper2<_memory_wrapper, _endian, Optionull<E, E::nullValue>>(E::e);
+    _test_endian_wrapper2<MemoryWrapper, Endian, Optionull<uint32_t, ~1u>>();
+    _test_endian_wrapper2<MemoryWrapper, Endian, Optionull<uint32_t, ~1u>>(5u);
+    _test_endian_wrapper2<MemoryWrapper, Endian, Optionull<E, E::nullValue>>();
+    _test_endian_wrapper2<MemoryWrapper, Endian, Optionull<E, E::nullValue>>(E::e);
 #if !defined(__clang__)  // error from clang 12: "sorry, non-type template argument of type 'double' is not yet supported"
-    _test_endian_wrapper2<_memory_wrapper, _endian, Optionull<double, -1.0>>();
-    _test_endian_wrapper2<_memory_wrapper, _endian, Optionull<double, -1.0>>(1.0);
+    _test_endian_wrapper2<MemoryWrapper, Endian, Optionull<double, -1.0>>();
+    _test_endian_wrapper2<MemoryWrapper, Endian, Optionull<double, -1.0>>(1.0);
 #endif
 }
 

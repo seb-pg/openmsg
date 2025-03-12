@@ -19,27 +19,27 @@
 
 namespace openmsg {
 
-template<typename _T>
-concept serialisable = std::is_arithmetic_v<_T> || std::is_enum_v<_T>;
+template<typename T>
+concept serialisable = std::is_arithmetic_v<T> || std::is_enum_v<T>;
 
-template<typename _T>
-requires std::is_arithmetic_v<_T>
+template<typename T>
+requires std::is_arithmetic_v<T>
 struct OptionullDefault {
 
-constexpr static _T null =  std::is_floating_point_v<_T> ?
-                            std::numeric_limits<_T>::quiet_NaN() :
-                            (std::is_signed_v<_T> ? std::numeric_limits<_T>::min() : std::numeric_limits<_T>::max());
-constexpr static _T min = static_cast<_T>(std::numeric_limits<_T>::min() + (std::is_signed_v<_T> ? 1 : 0));
-constexpr static _T max = static_cast<_T>(std::numeric_limits<_T>::max() - (std::is_signed_v<_T> ? 0 : 1));
+constexpr static T null =  std::is_floating_point_v<T> ?
+                            std::numeric_limits<T>::quiet_NaN() :
+                            (std::is_signed_v<T> ? std::numeric_limits<T>::min() : std::numeric_limits<T>::max());
+constexpr static T min = static_cast<T>(std::numeric_limits<T>::min() + (std::is_signed_v<T> ? 1 : 0));
+constexpr static T max = static_cast<T>(std::numeric_limits<T>::max() - (std::is_signed_v<T> ? 0 : 1));
 
 
 };
 
-template<serialisable _T, _T _nullValue = OptionullDefault<_T>::null>
+template<serialisable T, T NullValue = OptionullDefault<T>::null>
 struct Optionull
 {
-    using value_type = _T;
-    constexpr static value_type nullValue = _nullValue;
+    using value_type = T;
+    constexpr static value_type nullValue = NullValue;
 
     constexpr Optionull() noexcept = default;
 
@@ -56,13 +56,13 @@ struct Optionull
     }
 
 private:
-    value_type value = _nullValue;
+    value_type value = NullValue;
 };
 
-template<typename _T>
-concept optionullable = requires(_T x)
+template<typename T>
+concept optionullable = requires(T x)
 {
-    requires std::is_same_v<std::add_const_t<typename _T::value_type>, decltype(x.nullValue)>;
+    requires std::is_same_v<std::add_const_t<typename T::value_type>, decltype(x.nullValue)>;
 };
 
 }  // namespace openmsg
