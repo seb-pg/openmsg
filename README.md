@@ -25,7 +25,7 @@ IP stack protocols, communication protocols based on Simple Binary
 Encoding (SBE), etc.
 
 *openmsg* provides low-level wrappers to deal with endianess and other
-things like "optionull" values.
+things like "Optionull" values.
 
 *openmsg* can be used to decode multiple binary protocol such as
 TCP/IP headers, Simple Binary Encoding (SBE) messages, etc.
@@ -43,9 +43,9 @@ compiler memory barrier or things like read-after-write hazard (other
 variants). 
 
 These choices are left to the user who is responsible for defining the
-appropriate endian_wrapper_user (in include/openmsg/user_definitions.h).
+appropriate endian_wrapper_user (in include/openmsg/user_definitions.hpp).
 
-Some memory_wrapper are provided in include/openmsg/memory_wrapper.h, such as
+Some memory_wrapper are provided in include/openmsg/memory_wrapper.hpp, such as
 * memory_wrapper_bswap (default)
 * memory_wrapper_movbe
 * memory_wrapper_robust
@@ -71,19 +71,19 @@ A set of tests to check the library works as expected.
 </details>
 
 <details>
-<summary>include/openmsg/array_char.h</summary>
+<summary>include/openmsg/array_char.hpp</summary>
 A fixed size array-of-1byte-character wrapper.
 </details>
 
 <details>
-<summary>include/openmsg/bswap.h</summary>
+<summary>include/openmsg/bswap.hpp</summary>
 A bit-like function for bswap, which makes full use of std::is_constant_evaluated().
 </details>
 
 <details>
-<summary>include/openmsg/endian_wrapper.h</summary>
+<summary>include/openmsg/endian_wrapper.hpp</summary>
 This is the main wrapper to deal with near-seamless endianess.
-    
+
 A lot of things are done are compiling time and if the message has the same endianess and
 the host, not byte swapping is done, and the user's debugger should show the native values.
 
@@ -107,7 +107,7 @@ These wrappers offer 2 functions:
 </details>
 
 <details>
-<summary>include/openmsg/optionull.h</summary>
+<summary>include/openmsg/optionull.hpp</summary>
 This is a wrapper to deal with Simple Binary Encoding (SBE) nullValue.
 
 It wraps some data and store a constexpr value to identify the value
@@ -118,7 +118,7 @@ float and double (quiet nan).
 </details>
 
 <details>
-<summary>include/openmsg/user_definitions.h</summary>
+<summary>include/openmsg/user_definitions.hpp</summary>
 User defined value for endian_wrapper_user.
 </details>
 
@@ -128,3 +128,21 @@ User defined value for endian_wrapper_user.
 
 The library is provided "as is". While the author is happy to provide reasonable
 assistance, there is no guarantee any assistance will be provided.
+
+
+## C++ version
+
+The version is provided for C++20.
+
+It can be compiled using VisualStudio (.sln not provided) or using [CMake](https://cmake.org/cmake/help/latest/manual/cmake.1.html) (e.g. on Linux or WSL) of one which is deemed to be installed and "understood".
+
+First, generate a project buildsystem for a specific build type (here Release, but could be Debug or RelWithDebInfo)
+    cmake . -Bbuild/Release -DCMAKE_BUILD_TYPE=Release
+
+Second, build the project
+    cmake --build build/Release
+
+Third, simply run
+    ./build/Release/bin/uphold
+
+Running all the unit tests is recommended: ./build/Release/bin/uphold test
