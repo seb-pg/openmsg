@@ -144,4 +144,5 @@ Second, build the project
 
 Third, simply run
     ./build/Release/bin/example
+    ./build/Release/bin/tests
 

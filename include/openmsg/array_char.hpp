@@ -14,6 +14,7 @@
 #endif
 
 #include "openmsg/memory_wrapper.hpp"
+#include "openmsg/type_traits.hpp"
 #include "openmsg/user_definitions.hpp"
 
 #include <algorithm>
@@ -67,9 +68,6 @@ constexpr std::strong_ordering array_strncmp(const T(&elems)[N], const T(&src_el
 }
 
 }  // namespace detail_constexpr
-
-template <class T, class... Types>
-constexpr bool is_any_of = std::disjunction_v<std::is_same<T, Types>...>;
 
 template<typename T>
 concept characters = is_any_of<T, char, char8_t>;

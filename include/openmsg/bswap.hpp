@@ -13,6 +13,8 @@
 #error C++20 or more is needed
 #endif
 
+#include "openmsg/type_traits.hpp"
+
 #include <inttypes.h>
 #include <bit>
 #include <concepts>
@@ -34,9 +36,9 @@ constexpr T bswap(T x) noexcept
     if constexpr (sizeof(T) == 1)
         return x;
     using U = std::make_unsigned_t<T>;
+    using H = as_half_size_t<T>;
     auto y = static_cast<U>(x);
     constexpr U shift = sizeof(T) * 4;
-    using H = std::conditional_t<sizeof(T) == 8, uint32_t, std::conditional_t<sizeof(T) == 4, uint16_t, uint8_t>>;
     auto msw = bswap(static_cast<H>(y));
     auto lsw = bswap(static_cast<H>(y >> shift));
     return static_cast<T>((static_cast<U>(msw) << shift) | static_cast<U>(lsw));

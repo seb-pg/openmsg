@@ -15,6 +15,7 @@
 
 #include "openmsg/memory_wrapper.hpp"
 
+#include <bit>
 #include <type_traits>
 
 namespace openmsg {
@@ -22,7 +23,7 @@ namespace openmsg {
 // openmsg does not take side with regards to CPU capabilities, therefore, the
 // user must defined endian_wrapper_user in include/openmsg/user_definitions.h
 
-template<typename _H, typename _M, typename _E>
-using endian_wrapper_user = memory_wrapper_bswap<_H, _M, _E>;
+template<typename H, typename M, typename Endian>
+using endian_wrapper_user = memory_wrapper_bswap<H, M, Endian>;
 
 }  // namespace openmsg
