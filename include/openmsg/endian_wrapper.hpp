@@ -13,6 +13,7 @@
 #error C++20 or more is needed
 #endif
 
+#include "openmsg/concepts.hpp"
 #include "openmsg/optionull.hpp"
 #include "openmsg/memory_wrapper.hpp"
 #include "openmsg/user_definitions.hpp"
@@ -21,29 +22,26 @@
 
 namespace openmsg {
 
-template<typename T>
-concept endian_wrappable = serialisable<T> || optionullable<T>;
-
 namespace detail {
 
-template<endian_wrappable T, bool = optionullable<T>>
+template<typename T>
 struct EndianWrapperBase
+{
+    using value_type = T;
+};
+
+template<optionullable T>
+struct EndianWrapperBase<T>
 {
     using value_type = typename T::value_type;
     constexpr static value_type nullValue = T::nullValue;
-};
-
-template<serialisable T>
-struct EndianWrapperBase<T, false>
-{
-    using value_type = T;
 };
 
 }  // namespace detail
 
 #pragma pack(push, 1)
 
-template<endian_wrappable T, template<typename...> class _memory_wrapper, std::endian _endian>
+template<swappable T, template<typename...> class _memory_wrapper, std::endian _endian>
 struct EndianWrapper : detail::EndianWrapperBase<T>
 {
     using value_type = typename detail::EndianWrapperBase<T>::value_type;
@@ -87,10 +85,10 @@ private:
 
 #pragma pack(pop)
 
-template<endian_wrappable T>
+template<swappable T>
 using BigEndian    = EndianWrapper<T, endian_wrapper_user, std::endian::big>;
 
-template<endian_wrappable T>
+template<swappable T>
 using LittleEndian = EndianWrapper<T, endian_wrapper_user, std::endian::little>;
 
 using le_int8_t = LittleEndian<uint8_t>;

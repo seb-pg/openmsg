@@ -18,7 +18,7 @@ namespace openmsg {
 
 template<template<typename...> class _W = BigEndian>
 struct example_message
-{                                                   // serialised values:
+{                                                   // swappable values:
     _W<uint32_t> a = 0xDEADBEEFu;                   // deadbeef
     _W<Optionull<uint16_t>> b[2] = { 0xDEAD };      // dead, ffff
     _W<Optionull<uint32_t>> c[2] = { 0xDEADBEEF };  // deadbeef, ffffffff

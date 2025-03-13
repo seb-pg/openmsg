@@ -13,6 +13,7 @@
 #error C++20 or more is needed
 #endif
 
+#include "openmsg/concepts.hpp"
 #include "openmsg/type_traits.hpp"
 
 #include <inttypes.h>
@@ -31,42 +32,50 @@ namespace openmsg {
 namespace detail_constexpr {
 
 template<std::integral T>
-constexpr T bswap(T x) noexcept
+constexpr T __bswap(T value) noexcept
 {
     if constexpr (sizeof(T) == 1)
-        return x;
-    using U = std::make_unsigned_t<T>;
+        return value;
+    using U = as_uint_type_t<T>;
     using H = as_half_size_t<T>;
-    auto y = static_cast<U>(x);
     constexpr U shift = sizeof(T) * 4;
-    auto msw = bswap(static_cast<H>(y));
-    auto lsw = bswap(static_cast<H>(y >> shift));
-    return static_cast<T>((static_cast<U>(msw) << shift) | static_cast<U>(lsw));
+    U unsigned_value = static_cast<U>(value);
+    auto msw = __bswap(static_cast<H>(unsigned_value));
+    auto lsw = __bswap(static_cast<H>(unsigned_value >> shift));
+    return static_cast<T>(static_cast<U>(msw) << shift | static_cast<U>(lsw));
+}
+
+template<swappable T>
+constexpr T bswap(T value) noexcept
+{
+    using U = as_uint_type_t<T>;
+    return std::bit_cast<T>(__bswap(std::bit_cast<U>(value)));
 }
 
 }  // namespace detail_constexpr
 
-template<std::integral T>
+template<swappable T>
 constexpr T bswap(T x) noexcept
 {
     if (std::is_constant_evaluated())
         return detail_constexpr::bswap(x);
     if constexpr (sizeof(T) == 1)
         return x;
+    using U = as_uint_type_t<T>;
 #if defined(__GNUC__) || defined(__clang__)
     if constexpr (sizeof(T) == 2)
-        return bswap_16(x);
+        return std::bit_cast<T>(bswap_16(std::bit_cast<U>(x)));
     if constexpr (sizeof(T) == 4)
-        return bswap_32(x);
+        return std::bit_cast<T>(bswap_32(std::bit_cast<U>(x)));
     if constexpr (sizeof(T) == 8)
-        return bswap_64(x);
+        return std::bit_cast<T>(bswap_64(std::bit_cast<U>(x)));
 #elif defined(_MSC_VER)
     if constexpr (sizeof(T) == 2)
-        return _byteswap_ushort(x);
+        return std::bit_cast<T>(_byteswap_ushort(std::bit_cast<U>(x)));
     if constexpr (sizeof(T) == 4)
-        return _byteswap_ulong(x);
+        return std::bit_cast<T>(_byteswap_ulong(std::bit_cast<U>(x)));
     if constexpr (sizeof(T) == 8)
-        return _byteswap_uint64(x);
+        return std::bit_cast<T>(_byteswap_uint64(std::bit_cast<U>(x)));
 #else
     return detail_constexpr::bswap(x);
 #endif

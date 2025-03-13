@@ -33,6 +33,4 @@ requires (sizeof(T) <= 8 && std::has_single_bit(sizeof(T)))
 using as_half_size_t =  std::conditional_t<sizeof(T) == 8, uint32_t,
                         std::conditional_t<sizeof(T) == 4, uint16_t, uint8_t>>;
 
-using ascii8_t = unsigned char;
-
 }  // namespace openmsg

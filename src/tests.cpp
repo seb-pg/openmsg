@@ -19,6 +19,7 @@
 #include <format>
 #include <iomanip>
 #include <iostream>
+#include <limits>
 #include <sstream>
 #include <source_location>
 #include <string.h>
@@ -126,25 +127,25 @@ void test_bswap()
     dynamic_assert(v8 == constants::r8);
 }
 
-void test_serialisable()
+void test_swappable()
 {
-    // check if serialisable concept is working as intended
+    // check if swappable concept is working as intended
     enum E : uint16_t {};
     struct S {};
-    static_assert(serialisable<uint16_t>);
-    static_assert(serialisable<double>);
-    static_assert(serialisable<E>);
-    static_assert(!serialisable<S>);
+    static_assert(swappable<uint16_t>);
+    static_assert(swappable<double>);
+    static_assert(swappable<E>);
+    static_assert(!swappable<S>);
 }
 
-template<serialisable T1, serialisable T2>
+template<swappable T1, swappable T2>
 struct _TestOptionull1
 {
     using value_type = T1;
     constexpr static T2 nullValue = 0;  // "optionull" have "nullValue"
 };
 
-template<serialisable T1, serialisable T2>
+template<swappable T1, swappable T2>
 struct _TestOptionull2
 {
     using value_type = T1;
@@ -169,11 +170,11 @@ void test_optionull()
     static_assert(on1.nullValue == nullValue);
     static_assert(on2() == 1);
 
-    // Check if optionullable<uint64_t> is set correctly and its default value is initialised to the correct "OptionullDefault"
+    // Check if optionullable<uint64_t> is set correctly and its default value is initialised to the correct "bounds"
     constexpr Optionull<int64_t> on3;
-    static_assert(on3.nullValue == OptionullDefault<int64_t>::null);
+    static_assert(on3.nullValue == bounds<int64_t>::nullValue);
     constexpr Optionull<uint64_t> on4;
-    static_assert(on4.nullValue == OptionullDefault<uint64_t>::null);
+    static_assert(on4.nullValue == bounds<uint64_t>::nullValue);
 
     // Check floating point values
 #if !defined(__clang__)  // error from clang 12: "sorry, non-type template argument of type 'double' is not yet supported"
@@ -325,7 +326,7 @@ void tests()
 {
     test_array_char();
     test_bswap();
-    test_serialisable();
+    test_swappable();
     test_optionull();
     test_endian_wrappers();
     test_messages();

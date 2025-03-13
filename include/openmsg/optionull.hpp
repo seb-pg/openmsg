@@ -13,29 +13,15 @@
 #error C++20 or more is needed
 #endif
 
-#include <concepts>
+#include "openmsg/bounds.hpp"
+#include "openmsg/concepts.hpp"
+
 #include <limits>
 #include <type_traits>
 
 namespace openmsg {
 
-template<typename T>
-concept serialisable = std::is_arithmetic_v<T> || std::is_enum_v<T>;
-
-template<typename T>
-requires std::is_arithmetic_v<T>
-struct OptionullDefault {
-
-constexpr static T null =  std::is_floating_point_v<T> ?
-                            std::numeric_limits<T>::quiet_NaN() :
-                            (std::is_signed_v<T> ? std::numeric_limits<T>::min() : std::numeric_limits<T>::max());
-constexpr static T min = static_cast<T>(std::numeric_limits<T>::min() + (std::is_signed_v<T> ? 1 : 0));
-constexpr static T max = static_cast<T>(std::numeric_limits<T>::max() - (std::is_signed_v<T> ? 0 : 1));
-
-
-};
-
-template<serialisable T, T NullValue = OptionullDefault<T>::null>
+template<swappable T, T NullValue = bounds<T>::nullValue>
 struct Optionull
 {
     using value_type = T;
@@ -57,12 +43,6 @@ struct Optionull
 
 private:
     value_type value = NullValue;
-};
-
-template<typename T>
-concept optionullable = requires(T x)
-{
-    requires std::is_same_v<std::add_const_t<typename T::value_type>, decltype(x.nullValue)>;
 };
 
 }  // namespace openmsg
