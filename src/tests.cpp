@@ -190,19 +190,21 @@ void test_optionull()
 enum class E : uint16_t { e = constants::w2, nullValue = 65535 };
 struct B { uint32_t b1 : 3; uint32_t b2 : 2; int32_t b3 : 3; };
 
-template<template<typename...> class MemoryWrapper, std::endian Endian, typename M, typename H>
+template<template<typename H, std::endian _endian, typename M> class MemoryWrapper,
+         std::endian _endian, typename M, typename H>
 void _test_memory_wrapper2(const H& x)
 {
-    using memory_wrapper = MemoryWrapper<H, M, std::integral_constant<std::endian, Endian>>;
+    using memory_wrapper = MemoryWrapper<H, _endian, M>;
     M memory_value = memory_wrapper::htom(x);
     auto host_value = memory_wrapper::mtoh(memory_value);
     dynamic_assert(host_value == x);
 }
 
-template<template<typename...> class MemoryWrapper, std::endian Endian, typename T, typename ... _Args>
+template<template<typename H, std::endian, typename M> class MemoryWrapper,
+         std::endian _endian, typename T, typename ... _Args>
 void _test_endian_wrapper2(_Args&&... args)
 {
-    using OurEndian = EndianWrapper<T, MemoryWrapper, Endian>;
+    using OurEndian = EndianWrapper<T, MemoryWrapper, _endian>;
     using value_type = typename OurEndian::value_type;
     using storage_type = typename OurEndian::storage_type;
 
@@ -240,7 +242,7 @@ void _test_endian_wrapper2(_Args&&... args)
     if constexpr (!optionullable<OurEndian> && sizeof...(_Args) == 0)
         dynamic_assert(buf == unset_buf);
 
-    if constexpr (Endian == std::endian::native)
+    if constexpr (_endian == std::endian::native)
         dynamic_assert(stored_value == std::bit_cast<storage_type>(host_value));
     else
     {
@@ -249,29 +251,30 @@ void _test_endian_wrapper2(_Args&&... args)
     }
 }
 
-template<template<typename...> class MemoryWrapper, std::endian Endian>
+template<template<typename H, std::endian, typename M> class MemoryWrapper,
+         std::endian _endian>
 void _test_endian_wrapper1()
 {
     // test if the memory wrapper behaves as intended
-    _test_memory_wrapper2<MemoryWrapper, Endian, uint64_t, double>(1.0);
-    _test_memory_wrapper2<MemoryWrapper, Endian, uint16_t, E>(E::e);
+    _test_memory_wrapper2<MemoryWrapper, _endian, uint64_t, double>(1.0);
+    _test_memory_wrapper2<MemoryWrapper, _endian, uint16_t, E>(E::e);
 
     // test endian wrapper on "direct" types
-    _test_endian_wrapper2<MemoryWrapper, Endian, uint32_t>();
-    _test_endian_wrapper2<MemoryWrapper, Endian, uint32_t>(constants::w4);
-    _test_endian_wrapper2<MemoryWrapper, Endian, E>();
-    _test_endian_wrapper2<MemoryWrapper, Endian, E>(E::e);
-    _test_endian_wrapper2<MemoryWrapper, Endian, double>();
-    _test_endian_wrapper2<MemoryWrapper, Endian, double>(1.0);
+    _test_endian_wrapper2<MemoryWrapper, _endian, uint32_t>();
+    _test_endian_wrapper2<MemoryWrapper, _endian, uint32_t>(constants::w4);
+    _test_endian_wrapper2<MemoryWrapper, _endian, E>();
+    _test_endian_wrapper2<MemoryWrapper, _endian, E>(E::e);
+    _test_endian_wrapper2<MemoryWrapper, _endian, double>();
+    _test_endian_wrapper2<MemoryWrapper, _endian, double>(1.0);
 
     // test endian wrapper on "Optionull" types (same as direct types, but wrapped)
-    _test_endian_wrapper2<MemoryWrapper, Endian, Optionull<uint32_t, ~1u>>();
-    _test_endian_wrapper2<MemoryWrapper, Endian, Optionull<uint32_t, ~1u>>(5u);
-    _test_endian_wrapper2<MemoryWrapper, Endian, Optionull<E, E::nullValue>>();
-    _test_endian_wrapper2<MemoryWrapper, Endian, Optionull<E, E::nullValue>>(E::e);
+    _test_endian_wrapper2<MemoryWrapper, _endian, Optionull<uint32_t, ~1u>>();
+    _test_endian_wrapper2<MemoryWrapper, _endian, Optionull<uint32_t, ~1u>>(5u);
+    _test_endian_wrapper2<MemoryWrapper, _endian, Optionull<E, E::nullValue>>();
+    _test_endian_wrapper2<MemoryWrapper, _endian, Optionull<E, E::nullValue>>(E::e);
 #if !defined(__clang__)  // error from clang 12: "sorry, non-type template argument of type 'double' is not yet supported"
-    _test_endian_wrapper2<MemoryWrapper, Endian, Optionull<double, -1.0>>();
-    _test_endian_wrapper2<MemoryWrapper, Endian, Optionull<double, -1.0>>(1.0);
+    _test_endian_wrapper2<MemoryWrapper, _endian, Optionull<double, -1.0>>();
+    _test_endian_wrapper2<MemoryWrapper, _endian, Optionull<double, -1.0>>(1.0);
 #endif
 }
 

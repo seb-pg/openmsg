@@ -33,11 +33,12 @@ namespace openmsg {
 // openmsg does not take side with regards to memory aliasing and
 // memory access reordering issues (either software or hardware)
 
-template<typename H, typename M, typename Endian>
+template<typename H, std::endian _endian, typename M>
 struct memory_wrapper_bswap
 {
-    constexpr static auto endian = Endian::value;
+    constexpr static auto endian = _endian;
     using U = as_uint_type_t<H>;
+    //using StorageType = std::conditional_t<endian == std::endian::native, H, U>;
 
     constexpr static H mtoh(const M& x) noexcept
     {
@@ -56,10 +57,10 @@ struct memory_wrapper_bswap
     }
 };
 
-template<typename H, typename M, typename Endian>
+template<typename H, std::endian _endian, typename M>
 struct memory_wrapper_robust
 {
-    constexpr static auto endian = Endian::value;
+    constexpr static auto endian = _endian;
     using U = as_uint_type_t<H>;
 
     using bytes_t = uint8_t[sizeof(H)];
@@ -68,7 +69,7 @@ struct memory_wrapper_robust
     constexpr static H mtoh(const M& x) noexcept
     {
         if (std::is_constant_evaluated())
-            return memory_wrapper_bswap<H, M, Endian>::mtoh(x);
+            return memory_wrapper_bswap<H, _endian, M>::mtoh(x);
         auto y = std::bit_cast<U>(x);
         if constexpr (sizeof(M) == 1 || endian == std::endian::native)
             return std::bit_cast<H>(y);
@@ -92,7 +93,7 @@ struct memory_wrapper_robust
     constexpr static M htom(const H& x) noexcept
     {
         if (std::is_constant_evaluated())
-            return memory_wrapper_bswap<H, M, Endian>::htom(x);
+            return memory_wrapper_bswap<H, _endian, M>::htom(x);
         auto y = std::bit_cast<U>(x);
         if constexpr (sizeof(M) == 1 || endian == std::endian::native)
             return std::bit_cast<M>(y);
@@ -118,17 +119,17 @@ struct memory_wrapper_robust
     };
 };
 
-template<typename H, typename M, typename Endian>
+template<typename H, std::endian _endian, typename M>
 struct memory_wrapper_movbe
 {
     // for Intel CPU of 4th generation Intel Core processor family (codenamed Haswell)
-    constexpr static auto endian = Endian::value;
+    constexpr static auto endian = _endian;
     using U = as_uint_type_t<H>;
 
     constexpr static H mtoh(const M& x) noexcept
     {
         if (std::is_constant_evaluated())
-            return memory_wrapper_bswap<H, M, Endian>::mtoh(x);
+            return memory_wrapper_bswap<H, _endian, M>::mtoh(x);
         auto y = std::bit_cast<U>(x);
         if constexpr (sizeof(M) == 1 || endian == std::endian::native)
             return std::bit_cast<H>(y);
@@ -141,14 +142,14 @@ struct memory_wrapper_movbe
         if constexpr (sizeof(M) == 8)
             return std::bit_cast<H>(_load_be_u64(&y));
 #else
-        return memory_wrapper_bswap<H, M, Endian>::mtoh(x);
+        return memory_wrapper_bswap<H, _endian, M>::mtoh(x);
 #endif
     }
 
     constexpr static M htom(const H& x) noexcept
     {
         if (std::is_constant_evaluated())
-            return memory_wrapper_bswap<H, M, Endian>::htom(x);
+            return memory_wrapper_bswap<H, _endian, M>::htom(x);
         auto y = std::bit_cast<U>(x);
         if constexpr (sizeof(M) == 1 || endian == std::endian::native)
             return std::bit_cast<M>(y);
@@ -163,7 +164,7 @@ struct memory_wrapper_movbe
             _store_be_u64(&dst, y);
         return dst;
 #else
-        return memory_wrapper_bswap<H, M, Endian>::htom(x);
+        return memory_wrapper_bswap<H, _endian, M>::htom(x);
 #endif
     }
 };
