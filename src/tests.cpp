@@ -28,18 +28,6 @@
 
 namespace openmsg {
 
-namespace constants {
-
-constexpr uint16_t w2 = 0x8091;
-constexpr uint32_t w4 = 0x8091a2b3;
-constexpr uint64_t w8 = 0x8091a2b3c4d5e6f7ull;
-
-constexpr uint16_t r2 = 0x9180;
-constexpr uint32_t r4 = 0xb3a29180;
-constexpr uint64_t r8 = 0xf7e6d5c4b3a29180;
-
-}  // namespace constants
-
 void __dynamic_assert(bool value, std::source_location loc)
 {
     if (!bool(value))
@@ -293,8 +281,8 @@ template<template<typename...> class _W>
 struct test_message
 {
     _W<uint8_t> a = 0xAFu;
-    _W<Optionull<uint16_t>> b[2] = { constants::w2, constants::w2 };
-    _W<Optionull<uint64_t>> c[2] = { constants::w8, constants::w8 };
+    _W<Optionull<uint16_t>> b[2] = { 0x8091, 0x8091 };
+    _W<Optionull<uint64_t>> c[2] = { 0x8091a2b3c4d5e6f7ull, 0x8091a2b3c4d5e6f7ull };
     ArrayChar<9> d = "testme";
     ArrayChar8<9> e = u8"testmefurther";
 };
