@@ -42,13 +42,13 @@ struct EndianWrapperBase<T>
 #pragma pack(push, 1)
 
 template<swappable T,
-         template<typename H, std::endian _endian, typename M> class MemoryWrapper,
+         template<typename H, std::endian _endian> class MemoryWrapper,
          std::endian _endian>
 struct EndianWrapper : detail::EndianWrapperBase<T>
 {
     using value_type = typename detail::EndianWrapperBase<T>::value_type;
-    using storage_type = std::conditional_t<_endian == std::endian::native, value_type, as_uint_type_t<value_type>>;
-    using memory_wrapper = MemoryWrapper<value_type, _endian, storage_type>;
+    using memory_wrapper = MemoryWrapper<value_type, _endian>;
+    using storage_type = typename memory_wrapper::storage_type;
 
     constexpr EndianWrapper() noexcept
     {

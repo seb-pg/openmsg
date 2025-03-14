@@ -190,17 +190,17 @@ void test_optionull()
 enum class E : uint16_t { e = constants::w2, nullValue = 65535 };
 struct B { uint32_t b1 : 3; uint32_t b2 : 2; int32_t b3 : 3; };
 
-template<template<typename H, std::endian _endian, typename M> class MemoryWrapper,
-         std::endian _endian, typename M, typename H>
-void _test_memory_wrapper2(const H& x)
+template<template<typename H, std::endian _endian> class MemoryWrapper,
+         std::endian _endian, typename HostType>
+void _test_memory_wrapper2(const HostType& x)
 {
-    using memory_wrapper = MemoryWrapper<H, _endian, M>;
-    M memory_value = memory_wrapper::htom(x);
+    using memory_wrapper = MemoryWrapper<HostType, _endian>;
+    auto memory_value = memory_wrapper::htom(x);
     auto host_value = memory_wrapper::mtoh(memory_value);
     dynamic_assert(host_value == x);
 }
 
-template<template<typename H, std::endian, typename M> class MemoryWrapper,
+template<template<typename H, std::endian> class MemoryWrapper,
          std::endian _endian, typename T, typename ... _Args>
 void _test_endian_wrapper2(_Args&&... args)
 {
@@ -251,13 +251,13 @@ void _test_endian_wrapper2(_Args&&... args)
     }
 }
 
-template<template<typename H, std::endian, typename M> class MemoryWrapper,
+template<template<typename H, std::endian> class MemoryWrapper,
          std::endian _endian>
 void _test_endian_wrapper1()
 {
     // test if the memory wrapper behaves as intended
-    _test_memory_wrapper2<MemoryWrapper, _endian, uint64_t, double>(1.0);
-    _test_memory_wrapper2<MemoryWrapper, _endian, uint16_t, E>(E::e);
+    _test_memory_wrapper2<MemoryWrapper, _endian>(1.0);
+    _test_memory_wrapper2<MemoryWrapper, _endian>(E::e);
 
     // test endian wrapper on "direct" types
     _test_endian_wrapper2<MemoryWrapper, _endian, uint32_t>();
