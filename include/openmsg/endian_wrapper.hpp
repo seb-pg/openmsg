@@ -30,29 +30,30 @@ struct EndianWrapperBase
     using value_type = T;
 };
 
-template<optionullable T>
+template<has_null_value T>
 struct EndianWrapperBase<T>
 {
     using value_type = typename T::value_type;
-    constexpr static value_type nullValue = T::nullValue;
+    constexpr static auto nullValue = T::nullValue;
 };
 
 }  // namespace detail
 
 #pragma pack(push, 1)
 
-template<swappable T,
-         template<typename H, std::endian _endian> class MemoryWrapper,
-         std::endian _endian>
+template<swappable T, std::endian _endian,
+         template<typename H, std::endian> class MemoryWrapper>
 struct EndianWrapper : detail::EndianWrapperBase<T>
 {
+    constexpr static auto endian = _endian;
+    constexpr static bool is_optional = has_null_value<T>;  // This will change to use presence attribute
     using value_type = typename detail::EndianWrapperBase<T>::value_type;
     using memory_wrapper = MemoryWrapper<value_type, _endian>;
     using storage_type = typename memory_wrapper::storage_type;
 
     constexpr EndianWrapper() noexcept
     {
-        if constexpr (optionullable<T>)
+        if constexpr (has_null_value<T>)
             value = memory_wrapper::htom(T::nullValue);
         else if (std::is_constant_evaluated())
             value = {};
@@ -88,10 +89,10 @@ private:
 #pragma pack(pop)
 
 template<swappable T>
-using BigEndian    = EndianWrapper<T, endian_wrapper_user, std::endian::big>;
+using BigEndian    = EndianWrapper<T, std::endian::big, endian_wrapper_user>;
 
 template<swappable T>
-using LittleEndian = EndianWrapper<T, endian_wrapper_user, std::endian::little>;
+using LittleEndian = EndianWrapper<T, std::endian::little, endian_wrapper_user>;
 
 using le_int8_t = LittleEndian<uint8_t>;
 using le_uint8_t = LittleEndian<uint8_t>;
