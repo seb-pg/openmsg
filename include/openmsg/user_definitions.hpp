@@ -23,7 +23,7 @@ namespace openmsg {
 // openmsg does not take side with regards to CPU capabilities, therefore, the
 // user must defined endian_wrapper_user in include/openmsg/user_definitions.h
 
-template<typename H, std::endian _endian>
-using endian_wrapper_user = memory_wrapper_bswap<H, _endian>;
+template<typename HostType, std::endian _endian>
+using endian_wrapper_user = memory_wrapper_bswap<HostType, _endian>;
 
 }  // namespace openmsg
