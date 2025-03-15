@@ -21,11 +21,11 @@
 
 namespace openmsg {
 
-template<swappable T, T NullValue = bounds<T>::nullValue>
+template<swappable T, T _nullValue = bounds<T>::nullValue>
 struct Optionull
 {
     using value_type = T;
-    constexpr static value_type nullValue = NullValue;
+    constexpr static value_type nullValue = _nullValue;
 
     constexpr Optionull() noexcept = default;
 
@@ -42,7 +42,7 @@ struct Optionull
     }
 
 private:
-    value_type value = NullValue;
+    value_type value = Optionull::nullValue;
 };
 
 }  // namespace openmsg
