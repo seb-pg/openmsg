@@ -14,6 +14,7 @@
 #endif
 
 #include "openmsg/bswap.hpp"
+#include "openmsg/concepts.hpp"
 #include "openmsg/type_traits.hpp"
 
 #include <inttypes.h>
@@ -33,10 +34,11 @@ namespace openmsg {
 // openmsg does not take side with regards to memory aliasing and
 // memory access reordering issues (either software or hardware)
 
-template<typename HostType, std::endian _endian = std::endian::native>
+template<swappable HostType, std::endian _endian = std::endian::native>
 struct memory_wrapper_bswap
 {
     constexpr static auto endian = _endian;
+    using host_type = HostType;
     using storage_type = std::conditional_t<endian == std::endian::native, HostType, as_uint_type_t<HostType>>;
 
     constexpr static HostType mtoh(const storage_type& x) noexcept
@@ -56,10 +58,11 @@ struct memory_wrapper_bswap
     }
 };
 
-template<typename HostType, std::endian _endian = std::endian::native>
+template<swappable HostType, std::endian _endian = std::endian::native>
 struct memory_wrapper_robust
 {
     constexpr static auto endian = _endian;
+    using host_type = HostType;
     using storage_type = std::conditional_t<endian == std::endian::native, HostType, as_uint_type_t<HostType>>;
 
     using bytes_t = uint8_t[sizeof(storage_type)];
@@ -123,11 +126,12 @@ struct memory_wrapper_robust
     };
 };
 
-template<typename HostType, std::endian _endian = std::endian::native>
+template<swappable HostType, std::endian _endian = std::endian::native>
 struct memory_wrapper_movbe
 {
     // for Intel CPU of 4th generation Intel Core processor family (codenamed Haswell)
     constexpr static auto endian = _endian;
+    using host_type = HostType;
     using storage_type = std::conditional_t<endian == std::endian::native, HostType, as_uint_type_t<HostType>>;
 
     constexpr static HostType mtoh(const storage_type& x) noexcept
