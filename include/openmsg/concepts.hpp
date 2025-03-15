@@ -28,6 +28,7 @@ template<typename T> concept signed_integral   = is_any_of<T, int8_t, int16_t, i
 template<typename T> concept unsigned_integral = is_any_of<T, uint8_t, uint16_t, uint32_t, uint64_t>;
 template<typename T> concept any_integral      = signed_integral<T> || unsigned_integral<T>;
 template<typename T> concept enumerated        = std::is_enum_v<T>;
-template<typename T> concept swappable         = any_character<T> || any_integral<T> || std::floating_point<T> || enumerated<T> || has_null_value<T>;
+template<typename T> concept swappable         = any_character<T> || any_integral<T> || std::floating_point<T> || enumerated<T>;
+template<typename T> concept wrappable         = swappable<T> || has_null_value<T>;
 
 }  // namespace openmsg

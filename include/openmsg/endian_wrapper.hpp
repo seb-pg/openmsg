@@ -41,7 +41,7 @@ struct EndianWrapperBase<T>
 
 #pragma pack(push, 1)
 
-template<swappable T, std::endian _endian,
+template<wrappable T, std::endian _endian,
          template<typename H, std::endian> class MemoryWrapper>
 struct EndianWrapper : detail::EndianWrapperBase<T>
 {
@@ -88,10 +88,10 @@ private:
 
 #pragma pack(pop)
 
-template<swappable T>
+template<wrappable T>
 using BigEndian    = EndianWrapper<T, std::endian::big, endian_wrapper_user>;
 
-template<swappable T>
+template<wrappable T>
 using LittleEndian = EndianWrapper<T, std::endian::little, endian_wrapper_user>;
 
 using le_int8_t = LittleEndian<uint8_t>;

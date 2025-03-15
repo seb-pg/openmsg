@@ -24,6 +24,7 @@
 #include <sstream>
 #include <source_location>
 #include <string.h>
+#include <type_traits>
 #include <vector>
 
 namespace openmsg {
@@ -190,7 +191,7 @@ void test_endian(Args&&... args)
     else if constexpr (has_null_value<OurEndianWrapper>)
     {
         constexpr OurEndianWrapper oe = OurEndianWrapper::nullValue;
-        (void)oe;
+        static_assert(oe.nullValue == static_cast<value_type>(123));
     }
     else
     {
@@ -229,20 +230,22 @@ void test_endian(Args&&... args)
 }
 
 template<swappable T, std::endian endian, template<swappable, std::endian> class MemoryWrapper>
-void test_memory_endian_value(const T& x)
+void test_memory_endian_value(const T& value)
 {
     using memory_wrapper = MemoryWrapper<T, endian>;
-    const auto memory_value = memory_wrapper::htom(x);
+    const auto memory_value = memory_wrapper::htom(value);
     const auto host_value = memory_wrapper::mtoh(memory_value);
-    dynamic_assert(host_value == x);
+    dynamic_assert(host_value == value);
 
     using DirectEndianWrapper = EndianWrapper<T, endian, MemoryWrapper>;
     test_endian<DirectEndianWrapper>();
-    test_endian<DirectEndianWrapper>(x);
+    test_endian<DirectEndianWrapper>(value);
 
-    using OptionalEndianWrapper = EndianWrapper<Optionull<T>, endian, MemoryWrapper>;
+    constexpr auto nullValue = static_cast<T>(123);
+    using OptionalEndianWrapper = EndianWrapper<Optionull<T, nullValue>, endian, MemoryWrapper>;
+    static_assert(OptionalEndianWrapper::nullValue == static_cast<T>(123));
     test_endian<OptionalEndianWrapper>();
-    test_endian<OptionalEndianWrapper>(x);
+    test_endian<OptionalEndianWrapper>(value);
 }
 
 template<swappable T, std::endian endian>
@@ -320,12 +323,7 @@ void tests()
     test_array<char>::test();
     test_array<char8_t>::test();
 
-    //test_array_char();
-
-    //test_type<char>();
-    //test_type<unsigned char>();
     test_type<char8_t>();
-
     test_type<int8_t>();
     test_type<uint8_t>();
     test_type<int16_t>();
