@@ -14,7 +14,6 @@
 #endif
 
 #include "openmsg/array_char.hpp"
-#include "openmsg/attributes.hpp"
 #include "openmsg/bounds.hpp"
 #include "openmsg/bswap.hpp"
 #include "openmsg/endian_wrapper.hpp"
