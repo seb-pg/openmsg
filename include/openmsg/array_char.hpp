@@ -92,8 +92,8 @@ public:
             elems[size - 1] = 0;
     }
 
-    template<size_t Ns, typename input_type>
-    constexpr ArrayCharacter(const input_type(&src_elems)[Ns]) noexcept
+    template<size_t Ns, typename InputType>
+    constexpr ArrayCharacter(const InputType(&src_elems)[Ns]) noexcept
     {
         detail_constexpr::array_copy(elems, src_elems, is_zero_terminated);
     }
@@ -107,8 +107,8 @@ public:
 
     // operator=
 
-    template<size_t Ns, typename input_type>
-    constexpr ArrayCharacter& operator=(const input_type(&src_elems)[Ns]) noexcept
+    template<size_t Ns, typename InputType>
+    constexpr ArrayCharacter& operator=(const InputType(&src_elems)[Ns]) noexcept
     {
         detail_constexpr::array_copy(elems, src_elems, is_zero_terminated);
         return *this;
@@ -166,21 +166,21 @@ public:
 
     // misc (linked to from_array_pointer)
 
-    template<typename input_type>
-    ArrayCharacter(const std::basic_string_view<input_type>& src) noexcept
+    template<typename InputType>
+    ArrayCharacter(const std::basic_string_view<InputType>& src) noexcept
     {
         from_array_pointer(&*src.data(), src.size());
     }
 
-    template<typename input_type>
-    ArrayCharacter& operator=(const std::basic_string_view<input_type>& src) noexcept
+    template<typename InputType>
+    ArrayCharacter& operator=(const std::basic_string_view<InputType>& src) noexcept
     {
         from_array_pointer(&*src.data(), src.size());
         return *this;
     }
 
-    template<typename input_type>
-    ArrayCharacter& from_array_pointer(const input_type* src_elems, size_t max_size = std::numeric_limits<size_t>::max()) noexcept
+    template<typename InputType>
+    ArrayCharacter& from_array_pointer(const InputType* src_elems, size_t max_size = std::numeric_limits<size_t>::max()) noexcept
     {
         // function name is intentionally long
         max_size = std::min(max_size, size);
