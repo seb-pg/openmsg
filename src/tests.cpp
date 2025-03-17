@@ -180,7 +180,7 @@ void test_endian(Args&&... args)
 {
     constexpr static auto endian = OurEndianWrapper::endian;
     using value_type = typename OurEndianWrapper::value_type;
-    using storage_type = typename OurEndianWrapper::storage_type;
+    using memory_type = typename OurEndianWrapper::memory_type;
     using unsigned_type = as_uint_type_t<value_type>;
 
     if constexpr (sizeof...(Args) == 0)
@@ -215,7 +215,7 @@ void test_endian(Args&&... args)
     static_assert(sizeof(obj) == sizeof(host_value));
     static_assert(sizeof(obj) == sizeof(stored_value));
     static_assert(std::is_same_v<value_type, decltype(host_value)>);
-    static_assert(std::is_same_v<storage_type, decltype(stored_value)>);
+    static_assert(std::is_same_v<memory_type, decltype(stored_value)>);
 
     if constexpr (!has_null_value<OurEndianWrapper> && sizeof...(Args) == 0)
         dynamic_assert(buf == unset_buf);

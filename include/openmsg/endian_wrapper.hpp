@@ -43,13 +43,14 @@ struct EndianWrapperBase<T>
 
 template<wrappable T, std::endian _endian,
          template<typename H, std::endian> class MemoryWrapper>
+
 struct EndianWrapper : detail::EndianWrapperBase<T>
 {
     constexpr static auto endian = _endian;
     constexpr static bool is_optional = has_null_value<T>;  // This will change to use presence attribute
     using value_type = typename detail::EndianWrapperBase<T>::value_type;
     using memory_wrapper = MemoryWrapper<value_type, _endian>;
-    using storage_type = typename memory_wrapper::storage_type;
+    using memory_type = typename memory_wrapper::memory_type;
 
     constexpr EndianWrapper() noexcept
     {
@@ -59,13 +60,13 @@ struct EndianWrapper : detail::EndianWrapperBase<T>
             value = {};
     }
 
-    // htom
+    // htom (HostType to MemoryType)
     constexpr EndianWrapper(const value_type& x) noexcept
         : value(memory_wrapper::htom(x))
     {
     }
 
-    // mtoh
+    // mtoh (MemoryType to Memory)
     constexpr value_type operator()() const noexcept
     {
         return memory_wrapper::mtoh(value);
@@ -77,13 +78,13 @@ struct EndianWrapper : detail::EndianWrapperBase<T>
     }
 
     // access to storage_value (should only be used for testing)
-    constexpr const storage_type& storage_value() const noexcept
+    constexpr const memory_type& storage_value() const noexcept
     {
         return value;
     }
 
 private:
-    storage_type value;
+    memory_type value;
 };
 
 #pragma pack(pop)
