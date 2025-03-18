@@ -13,15 +13,13 @@
 #error C++20 or more is needed
 #endif
 
-#include "openmsg/array_char.hpp"
-#include "openmsg/attributes.hpp"
-#include "openmsg/bounds.hpp"
-#include "openmsg/bswap.hpp"
-#include "openmsg/concepts.hpp"
-#include "openmsg/endian_wrapper.hpp"
-#include "openmsg/memory_wrapper.hpp"
-#include "openmsg/optionull.hpp"
-#include "openmsg/presence.hpp"
-#include "openmsg/type_traits.hpp"
-#include "openmsg/type.hpp"
-#include "openmsg/user_definitions.hpp"
+namespace openmsg {
+
+enum class Presence : int
+{
+    required = 0,
+    optional = 1,
+    constant = 2,
+};
+
+}  // namespace openmsg

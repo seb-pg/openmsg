@@ -13,6 +13,7 @@
 #include "openmsg/endian_wrapper.hpp"
 #include "openmsg/memory_wrapper.hpp"
 #include "openmsg/optionull.hpp"
+#include "openmsg/type.hpp"
 
 #include "inttypes.h"
 
@@ -124,26 +125,13 @@ constexpr T simple_byteswap(T _input)
     return std::bit_cast<T>(output);
 }
 
-template<swappable T, swappable NullType>
-struct _TestOptionull1
-{
-    using value_type = T;
-    constexpr static auto nullValue = static_cast<NullType>(0);  // "optionull" have "nullValue"
-};
-
-template<swappable T, swappable NullType>
-struct _TestOptionull2
-{
-    using value_type = T;
-    constexpr static auto not_null_value = static_cast<NullType>(0);  // "optionull" does NOT have "nullValue", of the same type as _T1
-};
-
-template<swappable T>
+template<swappable T, swappable P = T>
 void test_primitive()
 {
     using U = as_uint_type_t<T>;
 
     constexpr auto _constant = static_cast<uint64_t>(0x8091a2b3c4d5e6f7ull);
+    constexpr auto intialisation_value = std::bit_cast<T>(static_cast<U>(_constant));
 
     // bswap
     constexpr auto constexpr_value = static_cast<U>(_constant);
@@ -151,7 +139,7 @@ void test_primitive()
     constexpr auto constexpr_expected = simple_byteswap(constexpr_value);
     static_assert(std::bit_cast<U>(constexpr_swapped) == std::bit_cast<U>(constexpr_expected));
 
-    auto value = static_cast<U>(_constant);
+    auto value = static_cast<U>(constexpr_value);
     auto swapped = bswap(value);
     auto expected = simple_byteswap(value);
     dynamic_assert(std::bit_cast<U>(swapped) == std::bit_cast<U>(expected));
@@ -159,49 +147,76 @@ void test_primitive()
     // swappable
     static_assert(swappable<T>);
 
-    // Check if our fake optionull (above), behave as intended
-    static_assert(has_null_value<_TestOptionull1<T, T>>);
-    static_assert(!has_null_value<_TestOptionull2<T, T>>);
+    // check normal (type) defaulted value, default nullValue
+    constexpr Type<T> tvalue_defaulted;
+    static_assert(!tvalue_defaulted.is_optional);
+    static_assert(std::bit_cast<U>(tvalue_defaulted.maxValue) == std::bit_cast<U>(bounds<T>::maxValue));
+    static_assert(std::bit_cast<U>(tvalue_defaulted.minValue) == std::bit_cast<U>(bounds<T>::minValue));
+    static_assert(std::bit_cast<U>(tvalue_defaulted.nullValue) == std::bit_cast<U>(bounds<T>::nullValue));
 
-    // Check if has_null_value<T, nullValue> is set correctly and its default value is initialised to nullValue
-    constexpr auto nullValue = bounds<T>::nullValue;
-    constexpr Optionull<T, nullValue> on1;
-    static_assert(std::bit_cast<U>(on1.nullValue) == std::bit_cast<U>(nullValue));
-    static_assert(std::bit_cast<U>(on1()) == std::bit_cast<U>(nullValue));
+    // check normal (type) initialised value, default nullValue
+    constexpr Type<T> tvalue_initialiased(intialisation_value);
+    static_assert(std::bit_cast<U>(tvalue_initialiased()) == std::bit_cast<U>(intialisation_value));
 
-    // Check if has_null_value<T, nullValue> is set correctly and its default value is initialised to the user value (ctor)
-    constexpr Optionull<T, nullValue> on2 = static_cast<T>(1);
-    static_assert(std::bit_cast<U>(on2.nullValue) == std::bit_cast<U>(nullValue));
-    static_assert(on2() == static_cast<T>(1));
+    // check optional (Optionull) defaulted value, default nullValue
+    constexpr Optionull<T> ovalue_defaulted;
+    static_assert(ovalue_defaulted.is_optional);
+    static_assert(std::bit_cast<U>(ovalue_defaulted.maxValue) == std::bit_cast<U>(bounds<T>::maxValue));
+    static_assert(std::bit_cast<U>(ovalue_defaulted.minValue) == std::bit_cast<U>(bounds<T>::minValue));
+    static_assert(std::bit_cast<U>(ovalue_defaulted.nullValue) == std::bit_cast<U>(bounds<T>::nullValue));
+
+    // check optional (Optionull) initialised value, default nullValue
+    constexpr Optionull<T> ovalue_initialiased(intialisation_value);
+    static_assert(std::bit_cast<U>(ovalue_initialiased()) == std::bit_cast<U>(intialisation_value));
+
+    // Check Type and Optionull attributes are accessible
+    static_assert(has_attributes<Type<T>>);
+    static_assert(has_attributes<typename Type<T>::attributes>);
+    static_assert(has_attributes<Optionull<T>>);
+    static_assert(has_attributes<typename Optionull<T>::attributes>);
+
+    //
+    static_assert(tvalue_initialiased.in_bound());
+    static_assert(tvalue_defaulted.in_bound() || any_character<P>);
+    static_assert(ovalue_initialiased.in_bound() || ovalue_initialiased.is_not_set());
+    static_assert(ovalue_defaulted.in_bound() || ovalue_defaulted.is_not_set());
 }
 
 template<typename OurEndianWrapper, typename ... Args>
 void test_endian(Args&&... args)
 {
-    constexpr static auto endian = OurEndianWrapper::endian;
     using value_type = typename OurEndianWrapper::value_type;
-    using memory_type = typename OurEndianWrapper::memory_type;
     using unsigned_type = as_uint_type_t<value_type>;
+    constexpr auto expected_null_value = static_cast<value_type>(123);
+    constexpr bool is_optional = OurEndianWrapper::is_optional;
 
-    if constexpr (sizeof...(Args) == 0)
+    static_assert(has_attributes<OurEndianWrapper>);
+    static_assert(has_attributes<typename OurEndianWrapper::attributes>);
+
+    OurEndianWrapper oe(std::forward<Args>(args)...);
+    if constexpr (oe.is_optional)
+        dynamic_assert(std::bit_cast<unsigned_type>(oe.nullValue) == std::bit_cast<unsigned_type>(expected_null_value));
+
+    const auto value = std::bit_cast<unsigned_type>(oe());
+    if (sizeof...(Args) > 0)
     {
-        constexpr OurEndianWrapper oe;
-        (void)oe;
+        constexpr auto expected_value = static_cast<value_type>(17);
+        dynamic_assert(std::bit_cast<unsigned_type>(value) == std::bit_cast<unsigned_type>(expected_value));
     }
-    else if constexpr (has_null_value<OurEndianWrapper>)
+    else if (is_optional)
     {
-        constexpr OurEndianWrapper oe = OurEndianWrapper::nullValue;
-        static_assert(oe.nullValue == static_cast<value_type>(123));
+        dynamic_assert(std::bit_cast<unsigned_type>(value) == std::bit_cast<unsigned_type>(expected_null_value));
     }
     else
     {
-        constexpr OurEndianWrapper oe = static_cast<value_type>(0);
-        (void)oe;
+        constexpr auto expected_zero_value = static_cast<value_type>(0);
+        dynamic_assert(std::bit_cast<unsigned_type>(value) == std::bit_cast<unsigned_type>(expected_zero_value));
     }
 
+    //
+    constexpr size_t size = 8 + sizeof(OurEndianWrapper(std::forward<Args>(args)...));
     constexpr char unset_value = static_cast<char>(0xCCu);
-    std::vector<char> unset_buf(512, unset_value);
-    std::vector<char> buf(512, unset_value);  // buffer to create an OurEndian using placement new
+    std::vector<char> buf(size, unset_value);  // buffer to create an OurEndian using placement new
     new (&*buf.begin()) OurEndianWrapper(std::forward<Args>(args)...);
     auto& obj = *new (&*buf.begin()) OurEndianWrapper(std::forward<Args>(args)...);
 
@@ -215,11 +230,9 @@ void test_endian(Args&&... args)
     static_assert(sizeof(obj) == sizeof(host_value));
     static_assert(sizeof(obj) == sizeof(stored_value));
     static_assert(std::is_same_v<value_type, decltype(host_value)>);
-    static_assert(std::is_same_v<memory_type, decltype(stored_value)>);
+    static_assert(std::is_same_v<typename OurEndianWrapper::memory_type, decltype(stored_value)>);
 
-    if constexpr (!has_null_value<OurEndianWrapper> && sizeof...(Args) == 0)
-        dynamic_assert(buf == unset_buf);
-
+    constexpr auto endian = OurEndianWrapper::endian;
     if constexpr (endian == std::endian::native)
         dynamic_assert(std::bit_cast<unsigned_type>(stored_value) == std::bit_cast<unsigned_type>(host_value));
     else
@@ -227,6 +240,10 @@ void test_endian(Args&&... args)
         auto bswap_host_value = detail_constexpr::bswap(std::bit_cast<as_uint_type_t<value_type>>(host_value));
         dynamic_assert(std::bit_cast<unsigned_type>(stored_value) == std::bit_cast<unsigned_type>(bswap_host_value));
     }
+
+    //
+    auto typed_value = oe.as_typed_value();
+    static_assert(type_wrapper<decltype(typed_value)>);
 }
 
 template<swappable T, std::endian endian, template<swappable, std::endian> class MemoryWrapper>
@@ -272,7 +289,7 @@ void test_type()
     if constexpr (!std::floating_point<T>)
     {
         enum class enum_type : T {};
-        test_primitive<enum_type>();
+        test_primitive<enum_type, T>();
         test_memory<enum_type>();
     }
 }
@@ -316,7 +333,6 @@ void test_messages()
 void tests()
 {
     static_assert(0x3412 == simple_byteswap<uint16_t>(0x1234));
-    static_assert(!has_null_value<_TestOptionull1<uint16_t, uint32_t>>);  // test when different
 
     static_assert(std::is_same_v<decltype(ArrayChar<5>().to_string_view())::value_type, char>);
     static_assert(std::is_same_v<decltype(ArrayChar8<5>().to_string_view())::value_type, char8_t>);

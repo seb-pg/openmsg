@@ -13,36 +13,18 @@
 #error C++20 or more is needed
 #endif
 
+#include "openmsg/attributes.hpp"
 #include "openmsg/bounds.hpp"
 #include "openmsg/concepts.hpp"
+#include "openmsg/presence.hpp"
+#include "openmsg/type.hpp"
 
 #include <limits>
 #include <type_traits>
 
 namespace openmsg {
 
-template<swappable T, T _nullValue = bounds<T>::nullValue>
-struct Optionull
-{
-    using value_type = T;
-    constexpr static value_type nullValue = _nullValue;
-
-    constexpr Optionull() noexcept = default;
-
-    // htom
-    constexpr Optionull(const value_type& x) noexcept
-        : value(x)
-    {
-    }
-
-    // mtoh
-    constexpr value_type operator()() const noexcept
-    {
-        return value;
-    }
-
-private:
-    value_type value = Optionull::nullValue;
-};
+template<swappable T, T... values>
+using Optionull = Type<T, Attributes<T, Presence::optional, values...>>;
 
 }  // namespace openmsg

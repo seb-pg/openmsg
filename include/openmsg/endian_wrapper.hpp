@@ -22,41 +22,54 @@
 
 namespace openmsg {
 
-namespace detail {
 
-template<typename T>
-struct EndianWrapperBase
+// concepts used locally
+
+template<typename T> concept type_wrapper = requires(T a)
 {
-    using value_type = T;
+    requires swappable<typename T::value_type>;
+    requires has_attributes<T>;
+    requires has_attributes<typename T::attributes>;
 };
 
-template<has_null_value T>
-struct EndianWrapperBase<T>
+template<typename T> concept wrappable = swappable<T> || type_wrapper<T>;
+
+// local type_traits
+
+template<typename T> struct underlying_type;
+template<swappable T> struct underlying_type<T>
 {
-    using value_type = typename T::value_type;
-    constexpr static auto nullValue = T::nullValue;
+    using type = T;
+    using attributes = Attributes<T>;
+};
+template<type_wrapper T> struct underlying_type<T>
+{
+    using type = typename T::value_type;
+    using attributes = typename T::attributes;
 };
 
-}  // namespace detail
+template<typename T> using underlying_type_t = typename underlying_type<T>::type;
+template<typename T> using underlying_attributes = typename underlying_type<T>::attributes;
+
+// EndianWrapper
 
 #pragma pack(push, 1)
 
-template<wrappable T, std::endian _endian,
-         template<typename H, std::endian> class MemoryWrapper>
-
-struct EndianWrapper : detail::EndianWrapperBase<T>
+template<wrappable T, std::endian _endian, template<typename H, std::endian> class MemoryWrapper = endian_wrapper_user>
+struct EndianWrapper : underlying_attributes<T>
 {
-    constexpr static auto endian = _endian;
-    constexpr static bool is_optional = has_null_value<T>;  // This will change to use presence attribute
-    using value_type = typename detail::EndianWrapperBase<T>::value_type;
+    using value_type = underlying_type_t<T>;
+    using attributes = underlying_attributes<T>;
     using memory_wrapper = MemoryWrapper<value_type, _endian>;
     using memory_type = typename memory_wrapper::memory_type;
+    constexpr static auto endian = _endian;
+    constexpr static bool is_optional = EndianWrapper::presence == Presence::optional;
 
     constexpr EndianWrapper() noexcept
     {
-        if constexpr (has_null_value<T>)
+        if constexpr (is_optional)
             value = memory_wrapper::htom(T::nullValue);
-        else if (std::is_constant_evaluated())
+        else
             value = {};
     }
 
@@ -78,6 +91,12 @@ struct EndianWrapper : detail::EndianWrapperBase<T>
     }
 
     // access to storage_value (should only be used for testing)
+    constexpr auto as_typed_value() const noexcept
+    {
+        return Type((*this)());
+    }
+
+    // access to storage_value (should only be used for testing)
     constexpr const memory_type& storage_value() const noexcept
     {
         return value;
@@ -89,11 +108,11 @@ private:
 
 #pragma pack(pop)
 
-template<wrappable T>
-using BigEndian    = EndianWrapper<T, std::endian::big, endian_wrapper_user>;
+// BigEndian and LittleEndian
+template<wrappable T> using BigEndian    = EndianWrapper<T, std::endian::big>;
+template<wrappable T> using LittleEndian = EndianWrapper<T, std::endian::little>;
 
-template<wrappable T>
-using LittleEndian = EndianWrapper<T, std::endian::little, endian_wrapper_user>;
+// Helpers
 
 using le_int8_t = LittleEndian<uint8_t>;
 using le_uint8_t = LittleEndian<uint8_t>;

@@ -46,7 +46,7 @@ template<unsigned_integral T> struct bounds<T>
 
 template<std::floating_point T> struct bounds<T>
 {
-    constexpr static T minValue = std::numeric_limits<T>::min();
+    constexpr static T minValue = -std::numeric_limits<T>::max();
     constexpr static T maxValue = std::numeric_limits<T>::max();
     constexpr static T nullValue = std::numeric_limits<T>::quiet_NaN();
 };
