@@ -17,6 +17,7 @@
 #include "openmsg/optionull.hpp"
 #include "openmsg/memory_wrapper.hpp"
 #include "openmsg/user_definitions.hpp"
+#include "openmsg/type.hpp"
 
 #include <type_traits>
 
