@@ -33,11 +33,11 @@ struct Attributes
 {
     // This is for a single value (does not use length)
     using value_type = T;
-    constexpr static Presence presence = _presence;
-    constexpr static T nullValue = _nullValue;
-    constexpr static T minValue = _minValue;
-    constexpr static T maxValue = _maxValue;
-    constexpr static bool is_optional = Attributes::presence == Presence::optional;  // helper
+    static constexpr Presence presence = _presence;
+    static constexpr T nullValue = _nullValue;
+    static constexpr T minValue = _minValue;
+    static constexpr T maxValue = _maxValue;
+    static constexpr bool is_optional = Attributes::presence == Presence::optional;  // helper
 };
 
 template<typename T> concept has_attributes = requires(T a)

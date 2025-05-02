@@ -37,11 +37,11 @@ namespace openmsg {
 template<swappable HostType, std::endian _endian = std::endian::native>
 struct memory_wrapper_bswap
 {
-    constexpr static auto endian = _endian;
+    static constexpr auto endian = _endian;
     using host_type = HostType;
     using memory_type = std::conditional_t<endian == std::endian::native, HostType, as_uint_type_t<HostType>>;
 
-    constexpr static HostType mtoh(const memory_type& x) noexcept
+    static constexpr HostType mtoh(const memory_type& x) noexcept
     {
         auto y = x;
         if constexpr (endian != std::endian::native)
@@ -49,7 +49,7 @@ struct memory_wrapper_bswap
         return std::bit_cast<HostType>(y);
     }
 
-    constexpr static memory_type htom(const HostType& x) noexcept
+    static constexpr memory_type htom(const HostType& x) noexcept
     {
         auto y = std::bit_cast<memory_type>(x);
         if constexpr (endian != std::endian::native)
@@ -61,14 +61,14 @@ struct memory_wrapper_bswap
 template<swappable HostType, std::endian _endian = std::endian::native>
 struct memory_wrapper_robust
 {
-    constexpr static auto endian = _endian;
+    static constexpr auto endian = _endian;
     using host_type = HostType;
     using memory_type = std::conditional_t<endian == std::endian::native, HostType, as_uint_type_t<HostType>>;
 
     using bytes_t = uint8_t[sizeof(memory_type)];
-    constexpr static int mask = endian == std::endian::native ? 0 : (sizeof(memory_type) - 1);
+    static constexpr int mask = endian == std::endian::native ? 0 : (sizeof(memory_type) - 1);
 
-    constexpr static HostType mtoh(const memory_type& x) noexcept
+    static constexpr HostType mtoh(const memory_type& x) noexcept
     {
         if (std::is_constant_evaluated())
             return memory_wrapper_bswap<HostType, _endian>::mtoh(x);
@@ -94,7 +94,7 @@ struct memory_wrapper_robust
         }
     };
 
-    constexpr static memory_type htom(const HostType& x) noexcept
+    static constexpr memory_type htom(const HostType& x) noexcept
     {
         if (std::is_constant_evaluated())
             return memory_wrapper_bswap<HostType, _endian>::htom(x);
@@ -130,11 +130,11 @@ template<swappable HostType, std::endian _endian = std::endian::native>
 struct memory_wrapper_movbe
 {
     // for Intel CPU of 4th generation Intel Core processor family (codenamed Haswell)
-    constexpr static auto endian = _endian;
+    static constexpr auto endian = _endian;
     using host_type = HostType;
     using memory_type = std::conditional_t<endian == std::endian::native, HostType, as_uint_type_t<HostType>>;
 
-    constexpr static HostType mtoh(const memory_type& x) noexcept
+    static constexpr HostType mtoh(const memory_type& x) noexcept
     {
         if (std::is_constant_evaluated())
             return memory_wrapper_bswap<HostType, _endian>::mtoh(x);
@@ -156,7 +156,7 @@ struct memory_wrapper_movbe
         }
     }
 
-    constexpr static memory_type htom(const HostType& x) noexcept
+    static constexpr memory_type htom(const HostType& x) noexcept
     {
         if (std::is_constant_evaluated())
             return memory_wrapper_bswap<HostType, _endian>::htom(x);

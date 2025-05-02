@@ -30,7 +30,7 @@ struct Type : _attributes
 {
     using value_type = T;
     using attributes = _attributes;
-    constexpr static bool is_optional = Type::presence == Presence::optional;  // helper
+    static constexpr bool is_optional = Type::presence == Presence::optional;  // helper
 
     constexpr Type() noexcept = default;
 

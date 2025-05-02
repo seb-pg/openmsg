@@ -62,8 +62,8 @@ struct EndianWrapper : underlying_attributes<T>
     using attributes = underlying_attributes<T>;
     using memory_wrapper = MemoryWrapper<value_type, _endian>;
     using memory_type = typename memory_wrapper::memory_type;
-    constexpr static auto endian = _endian;
-    constexpr static bool is_optional = EndianWrapper::presence == Presence::optional;
+    static constexpr auto endian = _endian;
+    static constexpr bool is_optional = EndianWrapper::presence == Presence::optional;
 
     constexpr EndianWrapper() noexcept
     {

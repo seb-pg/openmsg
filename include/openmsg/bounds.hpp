@@ -25,38 +25,38 @@ template<typename T> struct bounds;
 
 template<any_character T> struct bounds<T>
 {
-    constexpr static T minValue = static_cast<T>(0x20);
-    constexpr static T maxValue = static_cast<T>(0xFF);
-    constexpr static T nullValue = static_cast<T>(0x00);
+    static constexpr T minValue = static_cast<T>(0x20);
+    static constexpr T maxValue = static_cast<T>(0xFF);
+    static constexpr T nullValue = static_cast<T>(0x00);
 };
 
 template<signed_integral T> struct bounds<T>
 {
-    constexpr static T minValue = static_cast<T>(std::numeric_limits<T>::min() + 1);
-    constexpr static T maxValue = std::numeric_limits<T>::max();
-    constexpr static T nullValue = std::numeric_limits<T>::min();
+    static constexpr T minValue = static_cast<T>(std::numeric_limits<T>::min() + 1);
+    static constexpr T maxValue = std::numeric_limits<T>::max();
+    static constexpr T nullValue = std::numeric_limits<T>::min();
 };
 
 template<unsigned_integral T> struct bounds<T>
 {
-    constexpr static T minValue = std::numeric_limits<T>::min();
-    constexpr static T maxValue = static_cast<T>(std::numeric_limits<T>::max() - 1);
-    constexpr static T nullValue = std::numeric_limits<T>::max();
+    static constexpr T minValue = std::numeric_limits<T>::min();
+    static constexpr T maxValue = static_cast<T>(std::numeric_limits<T>::max() - 1);
+    static constexpr T nullValue = std::numeric_limits<T>::max();
 };
 
 template<std::floating_point T> struct bounds<T>
 {
-    constexpr static T minValue = -std::numeric_limits<T>::max();
-    constexpr static T maxValue = std::numeric_limits<T>::max();
-    constexpr static T nullValue = std::numeric_limits<T>::quiet_NaN();
+    static constexpr T minValue = -std::numeric_limits<T>::max();
+    static constexpr T maxValue = std::numeric_limits<T>::max();
+    static constexpr T nullValue = std::numeric_limits<T>::quiet_NaN();
 };
 
 template<enumerated T> struct bounds<T>
 {
     using U = std::underlying_type_t<T>;
-    constexpr static T minValue = static_cast<T>(bounds<U>::minValue);
-    constexpr static T maxValue = static_cast<T>(bounds<U>::maxValue);
-    constexpr static T nullValue = static_cast<T>(bounds<U>::nullValue);
+    static constexpr T minValue = static_cast<T>(bounds<U>::minValue);
+    static constexpr T maxValue = static_cast<T>(bounds<U>::maxValue);
+    static constexpr T nullValue = static_cast<T>(bounds<U>::nullValue);
 };
 
 }  // namespace openmsg

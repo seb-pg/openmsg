@@ -5,7 +5,7 @@ Author: [Sébastien Rubens](https://www.linkedin.com/in/sebastienrubens/)
 ----
 
 ## Licensing (creative commons CC0)
-
+r
 To the extent possible under law, the person who associated CC0 with
 openmsg has waived all copyright and related or neighboring rights
 to openmsg.

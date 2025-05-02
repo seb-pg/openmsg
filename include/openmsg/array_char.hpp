@@ -74,8 +74,8 @@ requires (sizeof(T) == 1) && is_any_of<T, char, char8_t>
 struct ArrayCharacter
 {
 public:
-    constexpr static size_t size = N;
-    constexpr static bool is_zero_terminated = IsZeroTerminated;
+    static constexpr size_t size = N;
+    static constexpr bool is_zero_terminated = IsZeroTerminated;
     using value_type = T;
 
     constexpr ArrayCharacter(const ArrayCharacter& src) noexcept = default;
