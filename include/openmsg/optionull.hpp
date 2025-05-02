@@ -19,9 +19,6 @@
 #include "openmsg/presence.hpp"
 #include "openmsg/type.hpp"
 
-#include <limits>
-#include <type_traits>
-
 namespace openmsg {
 
 template<swappable T, T... values>
