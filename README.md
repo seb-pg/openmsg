@@ -143,6 +143,6 @@ Second, build the project
     cmake --build build/Release
 
 Third, simply run
-    ./build/Release/bin/example
+    ./build/Release/bin/examples
     ./build/Release/bin/tests
 
