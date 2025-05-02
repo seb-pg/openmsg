@@ -7,14 +7,13 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
-#include "openmsg/endian_wrapper.hpp"  // This is the bit to include when using BigEndian or LittleEndian wrappers
-#include "openmsg/array_char.hpp"      // This is the bit to include when using ArrayChar or ArrayChar8
+#include "openmsg/openmsg.hpp"
+
 #include <iostream>
 
 namespace openmsg {
 
-#pragma pack(push)
-#pragma pack(1)
+#pragma pack(push, 1)
 
 template<template<typename...> class _W = BigEndian>
 struct example_message

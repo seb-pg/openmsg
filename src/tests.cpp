@@ -7,13 +7,7 @@
 // You should have received a copy of the CC0 legalcode along with this
 // work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
-#include "openmsg/bswap.hpp"
-#include "openmsg/array_char.hpp"
-#include "openmsg/concepts.hpp"
-#include "openmsg/endian_wrapper.hpp"
-#include "openmsg/memory_wrapper.hpp"
-#include "openmsg/optionull.hpp"
-#include "openmsg/type.hpp"
+#include "openmsg/openmsg.hpp"
 
 #include "inttypes.h"
 
@@ -294,8 +288,7 @@ void test_type()
     }
 }
 
-#pragma pack(push)
-#pragma pack(1)
+#pragma pack(push, 1)
 
 template<template<typename...> class _W>
 struct test_message
